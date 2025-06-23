@@ -61,6 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
   let dpPoints = [];
   let dpImage = null;
 
+  function reduceDpCanvas() {
+    dpCanvas.style.width = '100%';
+    dpCanvas.style.height = 'auto';
+    dpCanvas.classList.add('reduced');
+  }
+
+  function restoreDpCanvas() {
+    if (dpCanvas.dataset.originalWidth) {
+      dpCanvas.style.width = dpCanvas.dataset.originalWidth + 'px';
+      dpCanvas.style.height = dpCanvas.dataset.originalHeight + 'px';
+    }
+    dpCanvas.classList.remove('reduced');
+  }
+
   dpUpload.addEventListener('change', () => {
     const file = dpUpload.files[0];
     if (!file) return;
@@ -70,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
       dpImage.onload = () => {
         dpCanvas.width = dpImage.width;
         dpCanvas.height = dpImage.height;
+        dpCanvas.dataset.originalWidth = dpImage.width;
+        dpCanvas.dataset.originalHeight = dpImage.height;
+        restoreDpCanvas();
         dpCtx.drawImage(dpImage, 0, 0);
         dpPoints = [];
         dpResult.textContent = '0';
@@ -80,6 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   dpCanvas.addEventListener('click', e => {
+    if (dpCanvas.classList.contains('reduced')) {
+      restoreDpCanvas();
+      return;
+    }
     if (!dpImage) return;
     const rect = dpCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -99,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const distPx = Math.hypot(dx, dy);
       const distMm = (distPx * 0.264583).toFixed(1);
       dpResult.textContent = distMm;
+      reduceDpCanvas();
     }
   });
 

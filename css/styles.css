@@ -32,6 +32,18 @@ canvas {
   margin-top: 0.5rem;
 }
 
+#dp-canvas.reduced {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  cursor: pointer;
+}
+
+.help-text {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
 #history-list li {
   display: flex;
   align-items: center;
