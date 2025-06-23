@@ -5,12 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const catalogSection = document.getElementById('catalog-section');
   const catalogUpload = document.getElementById('catalog-upload');
   const catalogDiv = document.getElementById('catalog');
-  const mapSection = document.getElementById('map-section');
   const historySection = document.getElementById('history-section');
   const historyList = document.getElementById('history-list');
   const importBtn = document.getElementById('import-json');
   const importFile = document.getElementById('import-file');
   const clearBtn = document.getElementById('clear-data');
+  const exportJsonBtn = document.getElementById('export-json');
+  const exportCsvBtn = document.getElementById('export-csv');
+  const exportPdfBtn = document.getElementById('export-pdf');
 
   const { jsPDF } = window.jspdf || {};
 
@@ -52,41 +54,54 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   signatureCanvas.addEventListener('touchend', stopDraw);
 
-  let map;
-  const markers = [];
+  const dpCanvas = document.getElementById('dp-canvas');
+  const dpCtx = dpCanvas.getContext('2d');
+  const dpUpload = document.getElementById('dp-upload');
+  const dpResult = document.getElementById('dp-result');
+  let dpPoints = [];
+  let dpImage = null;
 
-  function initMap() {
-    if (typeof L === 'undefined') {
-      console.warn('Leaflet não encontrado, mapa desativado');
-      return;
-    }
-    map = L.map('map').setView([-14.2350, -51.9253], 4);
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
-  }
+  dpUpload.addEventListener('change', () => {
+    const file = dpUpload.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      dpImage = new Image();
+      dpImage.onload = () => {
+        dpCanvas.width = dpImage.width;
+        dpCanvas.height = dpImage.height;
+        dpCtx.drawImage(dpImage, 0, 0);
+        dpPoints = [];
+        dpResult.textContent = '0';
+      };
+      dpImage.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 
-  function addMarker(v) {
-    if (map && v.latitude && v.longitude) {
-      let marker;
-      if (v.recipeImage) {
-        const icon = L.divIcon({
-          html: `<img src="${v.recipeImage}" />`,
-          className: 'thumb-marker',
-          iconSize: [40, 40]
-        });
-        marker = L.marker([v.latitude, v.longitude], { icon }).addTo(map);
-      } else {
-        marker = L.marker([v.latitude, v.longitude]).addTo(map);
-      }
-      let content = `<strong>${v.clientName}</strong><br>${v.clientAddress}<br>${v.timestamp}`;
-      if (v.recipeImage) {
-        content += `<br><img src="${v.recipeImage}" style="max-width:100px">`;
-      }
-      marker.bindPopup(content);
-      markers.push({ marker, visit: v });
+  dpCanvas.addEventListener('click', e => {
+    if (!dpImage) return;
+    const rect = dpCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (dpPoints.length >= 2) {
+      dpCtx.drawImage(dpImage, 0, 0);
+      dpPoints = [];
     }
-  }
+    dpCtx.fillStyle = 'red';
+    dpCtx.beginPath();
+    dpCtx.arc(x, y, 4, 0, Math.PI * 2);
+    dpCtx.fill();
+    dpPoints.push({ x, y });
+    if (dpPoints.length === 2) {
+      const dx = dpPoints[1].x - dpPoints[0].x;
+      const dy = dpPoints[1].y - dpPoints[0].y;
+      const distPx = Math.hypot(dx, dy);
+      const distMm = (distPx * 0.264583).toFixed(1);
+      dpResult.textContent = distMm;
+    }
+  });
+
 
   function addVisitToHistory(visit) {
     const li = document.createElement('li');
@@ -103,14 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
       img.style.marginLeft = '0.5rem';
       li.appendChild(img);
     }
-    li.style.cursor = 'pointer';
-    li.addEventListener('click', () => {
-      const m = markers.find(m => m.visit === visit);
-      if (m) {
-        map.setView([visit.latitude, visit.longitude], 15);
-        m.marker.openPopup();
-      }
-    });
+    li.style.cursor = 'default';
     historyList.appendChild(li);
   }
 
@@ -119,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     visits.push(visit);
     localStorage.setItem('visits', JSON.stringify(visits));
     addVisitToHistory(visit);
-    addMarker(visit);
+    updateButtons();
     visitForm.reset();
   }
 
@@ -127,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
     visits.forEach(v => {
       addVisitToHistory(v);
-      addMarker(v);
     });
   }
 
@@ -138,12 +145,20 @@ document.addEventListener('DOMContentLoaded', () => {
     link.click();
   }
 
+  function updateButtons() {
+    const visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    const hasData = visits.length > 0;
+    exportJsonBtn.disabled = !hasData;
+    exportCsvBtn.disabled = !hasData;
+    exportPdfBtn.disabled = !hasData;
+    clearBtn.disabled = !hasData;
+  }
+
   visitSection.classList.remove('hidden');
   catalogSection.classList.remove('hidden');
-  mapSection.classList.remove('hidden');
   historySection.classList.remove('hidden');
-  initMap();
   loadHistory();
+  updateButtons();
 
   visitForm.addEventListener('submit', e => {
     e.preventDefault();
@@ -157,7 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
       latitude: null,
       longitude: null,
       recipeImage: null,
-      signature: signatureCanvas.toDataURL()
+      signature: signatureCanvas.toDataURL(),
+      pupilDistance: parseFloat(dpResult.textContent) || null
     };
 
     const file = document.getElementById('recipe-upload').files[0];
@@ -165,7 +181,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const finalize = () => {
       const done = () => {
         saveVisit(visit);
+        updateButtons();
         signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        if (dpImage) {
+          dpCtx.drawImage(dpImage, 0, 0);
+        } else {
+          dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
+        }
+        dpPoints = [];
+        dpResult.textContent = '0';
       };
       navigator.geolocation.getCurrentPosition(pos => {
         visit.latitude = pos.coords.latitude;
@@ -209,12 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Array.isArray(data)) {
           localStorage.setItem('visits', JSON.stringify(data));
           historyList.innerHTML = '';
-          markers.forEach(m => m.marker.remove());
-          markers.length = 0;
           data.forEach(v => {
             addVisitToHistory(v);
-            addMarker(v);
           });
+          updateButtons();
         } else {
           alert('Arquivo inválido');
         }
@@ -229,8 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirm('Deseja remover todos os dados?')) {
       localStorage.clear();
       historyList.innerHTML = '';
-      markers.forEach(m => m.marker.remove());
-      markers.length = 0;
+      updateButtons();
     }
   });
 
@@ -249,6 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.text(`Email: ${v.clientEmail}`, 10, y); y += 10;
         doc.text(`Data/Hora: ${v.timestamp}`, 10, y); y += 10;
         doc.text(`Dioptria: ${v.diopters}`, 10, y); y += 10;
+        if (v.pupilDistance) {
+          doc.text(`DP: ${v.pupilDistance} mm`, 10, y); y += 10;
+        }
         if (v.recipeImage) {
           doc.addImage(v.recipeImage, 'JPEG', 10, y, 50, 50);
           y += 55;
