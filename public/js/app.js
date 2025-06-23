@@ -19,6 +19,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const { jsPDF } = window.jspdf || {};
 
+  function compressImage(file, maxWidth = 800, quality = 0.8) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(maxWidth / img.width, 1);
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function storeVisits(visits) {
+    try {
+      localStorage.setItem('visits', JSON.stringify(visits));
+      return true;
+    } catch (e) {
+      alert('Espa\u00e7o de armazenamento insuficiente. Exporte ou limpe visitas antigas.');
+      return false;
+    }
+  }
+
   function resetFileNames() {
     recipeFilename.textContent = 'Nenhum';
     dpFilename.textContent = 'Nenhum';
@@ -110,12 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
       recipePreview.style.display = 'none';
       return;
     }
-    const reader = new FileReader();
-    reader.onload = e => {
-      recipePreview.src = e.target.result;
+    compressImage(file).then(dataUrl => {
+      recipePreview.src = dataUrl;
       recipePreview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
+    });
   });
 
   recipePreview.addEventListener('click', () => {
@@ -141,8 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const file = dpUpload.files[0];
     dpFilename.textContent = file ? file.name : 'Nenhum';
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
+    compressImage(file).then(dataUrl => {
       dpImage = new Image();
       dpImage.onload = () => {
         dpCanvas.width = dpImage.width;
@@ -154,10 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dpPoints = [];
         dpResult.textContent = '0';
       };
-      dpImage.src = e.target.result;
-      dpPhotoSrc = e.target.result;
-    };
-    reader.readAsDataURL(file);
+      dpImage.src = dataUrl;
+      dpPhotoSrc = dataUrl;
+    });
   });
 
   dpCanvas.addEventListener('click', e => {
@@ -219,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function saveVisit(visit) {
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
     visits.push(visit);
-    localStorage.setItem('visits', JSON.stringify(visits));
+    if (!storeVisits(visits)) return;
     addVisitToHistory(visit, visits.length - 1);
     updateButtons();
     visitForm.reset();
@@ -362,12 +388,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (file) {
-      const reader = new FileReader();
-      reader.onload = ev => {
-        visit.recipeImage = ev.target.result;
+      compressImage(file).then(dataUrl => {
+        visit.recipeImage = dataUrl;
         finalize();
-      };
-      reader.readAsDataURL(file);
+      });
     } else {
       finalize();
     }

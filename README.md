@@ -27,3 +27,6 @@ Não há tela de login: ao abrir o site é possível cadastrar visitas imediatam
 Use os botões disponíveis para exportar ou importar um arquivo JSON, gerar um PDF profissional (uma visita por página) ou limpar todo o histórico.
 O campo de assinatura no formulário permite desenhar com o mouse ou toque, e a assinatura é incluída no PDF gerado.
 O orçamento exibido no catálogo também pode ser salvo em PDF pelo botão "Gerar PDF".
+
+## Armazenamento
+As imagens enviadas são reduzidas automaticamente antes do salvamento para economizar espaço. Caso o limite de `localStorage` seja atingido, o aplicativo exibirá um aviso sugerindo exportar ou remover visitas antigas.
