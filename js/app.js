@@ -399,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('export-pdf').addEventListener('click', () => {
       const visits = JSON.parse(localStorage.getItem('visits') || '[]');
       const doc = new jsPDF();
+      const generated = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
       visits.forEach((v, idx) => {
         doc.setFontSize(18);
         doc.text('Relatório de Visita', 105, 15, { align: 'center' });
@@ -418,17 +419,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (v.recipeImage) {
           doc.text('Receita:', 10, y); y += 5;
-          doc.addImage(v.recipeImage, 'JPEG', 10, y, 80, 80);
-          y += 85;
+          doc.addImage(v.recipeImage, 'JPEG', 10, y, 70, 70);
+          y += 75;
         }
         if (v.dpPhoto) {
           doc.text('Foto DP:', 110, 30);
-          doc.addImage(v.dpPhoto, 'JPEG', 110, 35, 80, 60);
+          doc.addImage(v.dpPhoto, 'JPEG', 110, 35, 60, 45);
         }
         if (v.signature) {
           doc.text('Assinatura:', 10, y); y += 5;
-          doc.addImage(v.signature, 'PNG', 10, y, 80, 40); y += 45;
+          doc.addImage(v.signature, 'PNG', 10, y, 60, 30); y += 35;
         }
+        doc.setFontSize(10);
+        doc.text(`Gerado por SanOptics em ${generated}`, 105, 285, { align: 'center' });
         if (idx < visits.length - 1) doc.addPage();
       });
       doc.save('visitas.pdf');
