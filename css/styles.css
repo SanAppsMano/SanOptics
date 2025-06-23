@@ -41,6 +41,21 @@ canvas {
   max-width: 50px;
   margin-left: 0.5rem;
 }
+
+#signature-canvas {
+  cursor: crosshair;
+}
+
+#history-list li {
+  margin-bottom: 0.5rem;
+}
+
+.thumb-marker img {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
 @media (min-width: 600px) {
   form {
     max-width: 400px;

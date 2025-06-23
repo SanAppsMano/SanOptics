@@ -12,6 +12,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const importFile = document.getElementById('import-file');
   const clearBtn = document.getElementById('clear-data');
 
+  const { jsPDF } = window.jspdf || {};
+
+  const signatureCanvas = document.getElementById('signature-canvas');
+  const signatureCtx = signatureCanvas.getContext('2d');
+  let drawing = false;
+
+  function startDraw(x, y) {
+    drawing = true;
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(x, y);
+  }
+
+  function draw(x, y) {
+    if (!drawing) return;
+    signatureCtx.lineTo(x, y);
+    signatureCtx.stroke();
+  }
+
+  function stopDraw() {
+    drawing = false;
+  }
+
+  signatureCanvas.addEventListener('mousedown', e => startDraw(e.offsetX, e.offsetY));
+  signatureCanvas.addEventListener('mousemove', e => draw(e.offsetX, e.offsetY));
+  signatureCanvas.addEventListener('mouseup', stopDraw);
+  signatureCanvas.addEventListener('mouseleave', stopDraw);
+  signatureCanvas.addEventListener('touchstart', e => {
+    const rect = signatureCanvas.getBoundingClientRect();
+    const t = e.touches[0];
+    startDraw(t.clientX - rect.left, t.clientY - rect.top);
+    e.preventDefault();
+  });
+  signatureCanvas.addEventListener('touchmove', e => {
+    const rect = signatureCanvas.getBoundingClientRect();
+    const t = e.touches[0];
+    draw(t.clientX - rect.left, t.clientY - rect.top);
+    e.preventDefault();
+  });
+  signatureCanvas.addEventListener('touchend', stopDraw);
+
   let map;
   const markers = [];
 
@@ -24,7 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function addMarker(v) {
     if (map && v.latitude && v.longitude) {
-      const marker = L.marker([v.latitude, v.longitude]).addTo(map);
+      let marker;
+      if (v.recipeImage) {
+        const icon = L.divIcon({
+          html: `<img src="${v.recipeImage}" />`,
+          className: 'thumb-marker',
+          iconSize: [40, 40]
+        });
+        marker = L.marker([v.latitude, v.longitude], { icon }).addTo(map);
+      } else {
+        marker = L.marker([v.latitude, v.longitude]).addTo(map);
+      }
       let content = `<strong>${v.clientName}</strong><br>${v.clientAddress}<br>${v.timestamp}`;
       if (v.recipeImage) {
         content += `<br><img src="${v.recipeImage}" style="max-width:100px">`;
@@ -36,9 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function addVisitToHistory(visit) {
     const li = document.createElement('li');
-    const info = document.createElement('span');
-    info.textContent = `${visit.timestamp} - ${visit.clientName}`;
-    li.appendChild(info);
+    const time = document.createElement('strong');
+    time.textContent = visit.timestamp;
+    li.appendChild(time);
+    const name = document.createElement('span');
+    name.textContent = ` - ${visit.clientName}`;
+    li.appendChild(name);
     if (visit.recipeImage) {
       const img = document.createElement('img');
       img.src = visit.recipeImage;
@@ -99,17 +152,22 @@ document.addEventListener('DOMContentLoaded', () => {
       timestamp: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
       latitude: null,
       longitude: null,
-      recipeImage: null
+      recipeImage: null,
+      signature: signatureCanvas.toDataURL()
     };
 
     const file = document.getElementById('recipe-upload').files[0];
 
     const finalize = () => {
+      const done = () => {
+        saveVisit(visit);
+        signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      };
       navigator.geolocation.getCurrentPosition(pos => {
         visit.latitude = pos.coords.latitude;
         visit.longitude = pos.coords.longitude;
-        saveVisit(visit);
-      }, () => saveVisit(visit));
+        done();
+      }, done);
     };
 
     if (file) {
@@ -172,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  if (typeof jsPDF !== 'undefined') {
+  if (jsPDF) {
     document.getElementById('export-pdf').addEventListener('click', () => {
       const visits = JSON.parse(localStorage.getItem('visits') || '[]');
       const doc = new jsPDF();
@@ -189,6 +247,11 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.text(`Dioptria: ${v.diopters}`, 10, y); y += 10;
         if (v.recipeImage) {
           doc.addImage(v.recipeImage, 'JPEG', 10, y, 50, 50);
+          y += 55;
+        }
+        if (v.signature) {
+          doc.text('Assinatura:', 10, y); y += 5;
+          doc.addImage(v.signature, 'PNG', 10, y, 80, 40); y += 45;
         }
         if (idx < visits.length - 1) doc.addPage();
       });
