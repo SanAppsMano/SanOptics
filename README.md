@@ -6,6 +6,7 @@ Esta é uma aplicação estática para serviços de visita domiciliar de uma ót
 - `public/` contém `index.html`.
 - `css/` contém `styles.css`.
 - `js/` contém `app.js` e `jspdf.umd.min.js`.
+- `lib/` possui as cópias locais do Leaflet (JS e CSS).
 
 ## Deploy no Netlify
 1. Faça login em sua conta Netlify e crie um novo site a partir deste repositório.
@@ -27,3 +28,4 @@ Depois acesse `http://localhost:8000` no navegador.
 Não há tela de login: ao abrir o site é possível cadastrar visitas imediatamente. Os dados ficam salvos no `localStorage` do navegador.
 Use os botões disponíveis para exportar ou importar um arquivo JSON, gerar um PDF profissional (uma visita por página) ou limpar todo o histórico.
 O campo de assinatura no formulário permite desenhar com o mouse ou toque, e a assinatura é incluída no PDF gerado.
+O orçamento exibido no catálogo também pode ser salvo em PDF pelo botão "Gerar PDF".

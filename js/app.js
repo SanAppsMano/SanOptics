@@ -56,6 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const markers = [];
 
   function initMap() {
+    if (typeof L === 'undefined') {
+      console.warn('Leaflet não encontrado, mapa desativado');
+      return;
+    }
     map = L.map('map').setView([-14.2350, -51.9253], 4);
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
@@ -257,6 +261,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       doc.save('visitas.pdf');
     });
+
+    const budgetBtn = document.getElementById('pdf-btn');
+    if (budgetBtn) {
+      budgetBtn.addEventListener('click', () => {
+        const doc = new jsPDF();
+        doc.text('Orçamento SanOptics', 10, 10);
+        doc.text(`Total: ${document.getElementById('total-price').textContent}`, 10, 20);
+        doc.save('orcamento.pdf');
+      });
+    }
   }
 
   catalogUpload.addEventListener('change', () => {
