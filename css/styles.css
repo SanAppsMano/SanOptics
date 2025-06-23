@@ -27,6 +27,14 @@ input, button {
   padding: 0.5rem;
   font-size: 1rem;
 }
+
+button, .icon-btn {
+  transition: transform 0.1s ease;
+}
+
+button:active, .icon-btn:active {
+  transform: scale(0.95);
+}
 canvas {
   border: 1px solid #ccc;
   margin-top: 0.5rem;

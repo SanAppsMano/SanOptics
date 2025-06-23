@@ -320,6 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   visitForm.addEventListener('submit', e => {
     e.preventDefault();
+    if (!confirm('Deseja salvar esta visita?')) {
+      return;
+    }
     const visit = {
       clientName: document.getElementById('client-name').value,
       clientPhone: document.getElementById('client-phone').value,
