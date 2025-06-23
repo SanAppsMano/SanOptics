@@ -32,6 +32,11 @@ canvas {
   margin-top: 0.5rem;
 }
 
+#recipe-preview {
+  max-width: 100px;
+  margin-top: 0.5rem;
+}
+
 #dp-canvas.reduced {
   width: 100%;
   max-width: 300px;

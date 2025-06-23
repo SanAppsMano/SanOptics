@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const catalogSection = document.getElementById('catalog-section');
   const catalogUpload = document.getElementById('catalog-upload');
   const catalogDiv = document.getElementById('catalog');
+  const recipeUpload = document.getElementById('recipe-upload');
+  const recipePreview = document.getElementById('recipe-preview');
   const historySection = document.getElementById('history-section');
   const historyList = document.getElementById('history-list');
   const importBtn = document.getElementById('import-json');
@@ -60,6 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const dpResult = document.getElementById('dp-result');
   let dpPoints = [];
   let dpImage = null;
+  let dpPhotoSrc = null;
+
+  recipeUpload.addEventListener('change', () => {
+    const file = recipeUpload.files[0];
+    if (!file) {
+      recipePreview.src = '';
+      recipePreview.style.display = 'none';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      recipePreview.src = e.target.result;
+      recipePreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
 
   function reduceDpCanvas() {
     dpCanvas.style.width = '100%';
@@ -92,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dpResult.textContent = '0';
       };
       dpImage.src = e.target.result;
+      dpPhotoSrc = e.target.result;
     };
     reader.readAsDataURL(file);
   });
@@ -125,8 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  function addVisitToHistory(visit) {
+  function addVisitToHistory(visit, index) {
     const li = document.createElement('li');
+    li.dataset.index = index;
     const time = document.createElement('strong');
     time.textContent = visit.timestamp;
     li.appendChild(time);
@@ -140,7 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
       img.style.marginLeft = '0.5rem';
       li.appendChild(img);
     }
-    li.style.cursor = 'default';
+    if (visit.dpPhoto) {
+      const dpi = document.createElement('img');
+      dpi.src = visit.dpPhoto;
+      dpi.style.maxWidth = '50px';
+      dpi.style.marginLeft = '0.5rem';
+      li.appendChild(dpi);
+    }
+    li.style.cursor = 'pointer';
     historyList.appendChild(li);
   }
 
@@ -148,15 +175,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
     visits.push(visit);
     localStorage.setItem('visits', JSON.stringify(visits));
-    addVisitToHistory(visit);
+    addVisitToHistory(visit, visits.length - 1);
     updateButtons();
     visitForm.reset();
+    recipePreview.src = '';
+    recipePreview.style.display = 'none';
+    dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
+    dpImage = null;
+    dpPhotoSrc = null;
+    dpPoints = [];
+    dpResult.textContent = '0';
   }
 
   function loadHistory() {
+    historyList.innerHTML = '';
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
-    visits.forEach(v => {
-      addVisitToHistory(v);
+    visits.forEach((v, i) => {
+      addVisitToHistory(v, i);
     });
   }
 
@@ -182,6 +217,55 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHistory();
   updateButtons();
 
+  historyList.addEventListener('click', e => {
+    const li = e.target.closest('li');
+    if (!li) return;
+    const visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    const idx = parseInt(li.dataset.index, 10);
+    const v = visits[idx];
+    if (!v) return;
+    document.getElementById('client-name').value = v.clientName || '';
+    document.getElementById('client-phone').value = v.clientPhone || '';
+    document.getElementById('client-email').value = v.clientEmail || '';
+    document.getElementById('client-address').value = v.clientAddress || '';
+    document.getElementById('diopters').value = v.diopters || '';
+    if (v.recipeImage) {
+      recipePreview.src = v.recipeImage;
+      recipePreview.style.display = 'block';
+    } else {
+      recipePreview.src = '';
+      recipePreview.style.display = 'none';
+    }
+    if (v.dpPhoto) {
+      dpImage = new Image();
+      dpImage.onload = () => {
+        dpCanvas.width = dpImage.width;
+        dpCanvas.height = dpImage.height;
+        dpCanvas.dataset.originalWidth = dpImage.width;
+        dpCanvas.dataset.originalHeight = dpImage.height;
+        dpCtx.drawImage(dpImage, 0, 0);
+        reduceDpCanvas();
+      };
+      dpImage.src = v.dpPhoto;
+      dpPhotoSrc = v.dpPhoto;
+    } else {
+      dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
+      dpImage = null;
+      dpPhotoSrc = null;
+    }
+    dpResult.textContent = v.pupilDistance ? v.pupilDistance : '0';
+    if (v.signature) {
+      const img = new Image();
+      img.onload = () => {
+        signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        signatureCtx.drawImage(img, 0, 0);
+      };
+      img.src = v.signature;
+    } else {
+      signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+    }
+  });
+
   visitForm.addEventListener('submit', e => {
     e.preventDefault();
     const visit = {
@@ -195,7 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
       longitude: null,
       recipeImage: null,
       signature: signatureCanvas.toDataURL(),
-      pupilDistance: parseFloat(dpResult.textContent) || null
+      pupilDistance: parseFloat(dpResult.textContent) || null,
+      dpPhoto: dpPhotoSrc
     };
 
     const file = document.getElementById('recipe-upload').files[0];
@@ -254,10 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = JSON.parse(e.target.result);
         if (Array.isArray(data)) {
           localStorage.setItem('visits', JSON.stringify(data));
-          historyList.innerHTML = '';
-          data.forEach(v => {
-            addVisitToHistory(v);
-          });
+          loadHistory();
           updateButtons();
         } else {
           alert('Arquivo inválido');
@@ -273,6 +355,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirm('Deseja remover todos os dados?')) {
       localStorage.clear();
       historyList.innerHTML = '';
+      recipePreview.src = '';
+      recipePreview.style.display = 'none';
+      catalogDiv.innerHTML = '';
+      dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
+      signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      dpImage = null;
+      dpPhotoSrc = null;
+      dpPoints = [];
+      dpResult.textContent = '0';
       updateButtons();
     }
   });
