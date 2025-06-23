@@ -1,6 +1,8 @@
 // Cadastro e login simples
 
 document.addEventListener('DOMContentLoaded', () => {
+  const registerSection = document.getElementById('register-section');
+  const registerForm = document.getElementById('register-form');
   const loginSection = document.getElementById('login-section');
   const loginForm = document.getElementById('login-form');
   const configSection = document.getElementById('config-section');
@@ -15,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const historyList = document.getElementById('history-list');
 
   let map;
+  const markers = [];
 
   function initMap() {
     map = L.map('map').setView([-14.2350, -51.9253], 4);
@@ -25,13 +28,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function addMarker(v) {
     if (map && v.latitude && v.longitude) {
-      L.marker([v.latitude, v.longitude]).addTo(map).bindPopup(v.clientName);
+      const marker = L.marker([v.latitude, v.longitude]).addTo(map);
+      let content = `<strong>${v.clientName}</strong><br>${v.clientAddress}<br>${v.timestamp}`;
+      if (v.recipeImage) {
+        content += `<br><img src="${v.recipeImage}" style="max-width:100px">`;
+      }
+      marker.bindPopup(content);
+      markers.push({ marker, visit: v });
     }
   }
 
   function addVisitToHistory(visit) {
     const li = document.createElement('li');
-    li.textContent = `${visit.timestamp} - ${visit.clientName} (${visit.clientAddress})`;
+    const info = document.createElement('span');
+    info.textContent = `${visit.timestamp} - ${visit.clientName}`;
+    li.appendChild(info);
+    if (visit.recipeImage) {
+      const img = document.createElement('img');
+      img.src = visit.recipeImage;
+      img.style.maxWidth = '50px';
+      img.style.marginLeft = '0.5rem';
+      li.appendChild(img);
+    }
+    li.style.cursor = 'pointer';
+    li.addEventListener('click', () => {
+      const m = markers.find(m => m.visit === visit);
+      if (m) {
+        map.setView([visit.latitude, visit.longitude], 15);
+        m.marker.openPopup();
+      }
+    });
     historyList.appendChild(li);
   }
 
@@ -59,21 +85,28 @@ document.addEventListener('DOMContentLoaded', () => {
     link.click();
   }
 
+  const storedUser = localStorage.getItem('username');
+  const storedPass = localStorage.getItem('password');
   const storedName = localStorage.getItem('opticName');
   const storedEmail = localStorage.getItem('adminEmail');
-  if (!storedName || !storedEmail) {
-    loginSection.classList.add('hidden');
+
+  if (!storedUser || !storedPass) {
+    registerSection.classList.remove('hidden');
+  } else if (!storedName || !storedEmail) {
     configSection.classList.remove('hidden');
+  } else {
+    loginSection.classList.remove('hidden');
   }
 
-  document.getElementById('new-optic').addEventListener('click', e => {
+  registerForm.addEventListener('submit', e => {
     e.preventDefault();
-    loginSection.classList.add('hidden');
-    visitSection.classList.add('hidden');
-    catalogSection.classList.add('hidden');
-    mapSection.classList.add('hidden');
-    historySection.classList.add('hidden');
-    configSection.classList.remove('hidden');
+    localStorage.setItem('username', document.getElementById('reg-username').value);
+    localStorage.setItem('password', document.getElementById('reg-password').value);
+    localStorage.setItem('opticName', document.getElementById('reg-optic').value);
+    localStorage.setItem('adminEmail', document.getElementById('reg-email').value);
+    registerSection.classList.add('hidden');
+    loginSection.classList.remove('hidden');
+    alert('Cadastro realizado. Faça login para continuar.');
   });
 
   configForm.addEventListener('submit', e => {
@@ -84,27 +117,32 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('opticName', nameInput.value);
     localStorage.setItem('adminEmail', emailInput.value);
     configSection.classList.add('hidden');
-    loginSection.classList.remove('hidden');
-    alert('Configuração salva. Use os dados cadastrados para entrar.');
+    visitSection.classList.remove('hidden');
+    catalogSection.classList.remove('hidden');
+    mapSection.classList.remove('hidden');
+    historySection.classList.remove('hidden');
+    initMap();
+    loadHistory();
   });
 
   loginForm.addEventListener('submit', e => {
     e.preventDefault();
-    const nameInput = document.getElementById('optic-name-login');
-    const emailInput = document.getElementById('admin-email-login');
-    if (!nameInput || !emailInput) return;
-    const name = nameInput.value;
-    const email = emailInput.value;
-    if (name === localStorage.getItem('opticName') && email === localStorage.getItem('adminEmail')) {
+    const user = document.getElementById('login-username').value;
+    const pass = document.getElementById('login-password').value;
+    if (user === localStorage.getItem('username') && pass === localStorage.getItem('password')) {
       loginSection.classList.add('hidden');
-      visitSection.classList.remove('hidden');
-      catalogSection.classList.remove('hidden');
-      mapSection.classList.remove('hidden');
-      historySection.classList.remove('hidden');
-      initMap();
-      loadHistory();
+      if (!localStorage.getItem('opticName') || !localStorage.getItem('adminEmail')) {
+        configSection.classList.remove('hidden');
+      } else {
+        visitSection.classList.remove('hidden');
+        catalogSection.classList.remove('hidden');
+        mapSection.classList.remove('hidden');
+        historySection.classList.remove('hidden');
+        initMap();
+        loadHistory();
+      }
     } else {
-      alert('Dados incorretos');
+      alert('Usuário ou senha inválidos');
     }
   });
 
@@ -118,14 +156,30 @@ document.addEventListener('DOMContentLoaded', () => {
       diopters: document.getElementById('diopters').value,
       timestamp: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
       latitude: null,
-      longitude: null
+      longitude: null,
+      recipeImage: null
     };
 
-    navigator.geolocation.getCurrentPosition(pos => {
-      visit.latitude = pos.coords.latitude;
-      visit.longitude = pos.coords.longitude;
-      saveVisit(visit);
-    }, () => saveVisit(visit));
+    const file = document.getElementById('recipe-upload').files[0];
+
+    const finalize = () => {
+      navigator.geolocation.getCurrentPosition(pos => {
+        visit.latitude = pos.coords.latitude;
+        visit.longitude = pos.coords.longitude;
+        saveVisit(visit);
+      }, () => saveVisit(visit));
+    };
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        visit.recipeImage = ev.target.result;
+        finalize();
+      };
+      reader.readAsDataURL(file);
+    } else {
+      finalize();
+    }
   });
 
   document.getElementById('export-json').addEventListener('click', () => {

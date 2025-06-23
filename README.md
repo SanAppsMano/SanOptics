@@ -24,6 +24,6 @@ python3 -m http.server 8000
 
 Depois acesse `http://localhost:8000` no navegador.
 
-Ao abrir o site pela primeira vez, cadastre o nome da ótica e o email do responsável. Esses dados ficam salvos no `localStorage`.
-Em acessos seguintes, informe o mesmo nome e email na tela de login para liberar o formulário de visitas.
+Ao abrir o site pela primeira vez, preencha o cadastro inicial informando usuário, senha, nome da ótica e email do responsável. Tudo fica salvo no `localStorage`.
+Nos acessos seguintes basta fazer login com o usuário e senha. Se desejar alterar o nome da ótica ou email, utilize a tela de configuração após o login.
 As visitas podem ser exportadas em JSON, CSV ou PDF profissional.
