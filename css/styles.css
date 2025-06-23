@@ -63,6 +63,23 @@ canvas {
   cursor: crosshair;
 }
 
+#signature-controls {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.icon-btn:focus {
+  outline: none;
+}
+
 #history-list li {
   margin-bottom: 0.5rem;
 }

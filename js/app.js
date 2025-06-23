@@ -20,16 +20,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const signatureCanvas = document.getElementById('signature-canvas');
   const signatureCtx = signatureCanvas.getContext('2d');
+  const openSignBtn = document.getElementById('open-signature');
+  const clearSignBtn = document.getElementById('clear-signature');
+  const closeSignBtn = document.getElementById('close-signature');
+  let signatureOpen = false;
   let drawing = false;
 
+  function openSignature() {
+    signatureCanvas.classList.remove('hidden');
+    openSignBtn.style.display = 'none';
+    clearSignBtn.style.display = 'inline-block';
+    closeSignBtn.style.display = 'inline-block';
+    signatureOpen = true;
+  }
+
+  function closeSignature() {
+    signatureCanvas.classList.add('hidden');
+    openSignBtn.style.display = 'inline-block';
+    clearSignBtn.style.display = 'none';
+    closeSignBtn.style.display = 'none';
+    signatureOpen = false;
+    drawing = false;
+  }
+
   function startDraw(x, y) {
+    if (!signatureOpen) return;
     drawing = true;
     signatureCtx.beginPath();
     signatureCtx.moveTo(x, y);
   }
 
   function draw(x, y) {
-    if (!drawing) return;
+    if (!drawing || !signatureOpen) return;
     signatureCtx.lineTo(x, y);
     signatureCtx.stroke();
   }
@@ -55,6 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
   });
   signatureCanvas.addEventListener('touchend', stopDraw);
+
+  openSignBtn.addEventListener('click', openSignature);
+  closeSignBtn.addEventListener('click', closeSignature);
+  clearSignBtn.addEventListener('click', () => {
+    signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+  });
+
+  closeSignature();
 
   const dpCanvas = document.getElementById('dp-canvas');
   const dpCtx = dpCanvas.getContext('2d');
@@ -261,8 +291,10 @@ document.addEventListener('DOMContentLoaded', () => {
         signatureCtx.drawImage(img, 0, 0);
       };
       img.src = v.signature;
+      openSignature();
     } else {
       signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      closeSignature();
     }
   });
 
@@ -290,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveVisit(visit);
         updateButtons();
         signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        closeSignature();
         if (dpImage) {
           dpCtx.drawImage(dpImage, 0, 0);
         } else {
@@ -360,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
       catalogDiv.innerHTML = '';
       dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
       signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      closeSignature();
       dpImage = null;
       dpPhotoSrc = null;
       dpPoints = [];
