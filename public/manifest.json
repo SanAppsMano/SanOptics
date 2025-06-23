@@ -1,0 +1,8 @@
+{
+  "name": "SanOptics",
+  "short_name": "SanOptics",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b3d91"
+}
