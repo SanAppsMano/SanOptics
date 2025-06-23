@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SanOptics</title>
   <link rel="stylesheet" href="../css/styles.css">
+  <script defer src="../js/jspdf.umd.min.js"></script>
   <script defer src="../js/app.js"></script>
 </head>
 <body>
@@ -12,18 +13,8 @@
     <h1>SanOptics</h1>
   </header>
   <main>
-    <section id="login-section">
-      <h2>Login</h2>
-      <form id="login-form">
-        <label for="login-username">Usuário</label>
-        <input type="text" id="login-username" required>
-        <label for="login-password">Senha</label>
-        <input type="password" id="login-password" required>
-        <button type="submit">Entrar</button>
-      </form>
-    </section>
 
-    <section id="visit-section" class="hidden">
+    <section id="visit-section">
       <h2>Cadastro da Visita</h2>
       <form id="visit-form" netlify enctype="multipart/form-data">
         <fieldset>
@@ -52,7 +43,7 @@
       </form>
     </section>
 
-    <section id="catalog-section" class="hidden">
+    <section id="catalog-section">
       <h2>Catálogo</h2>
       <input type="file" id="catalog-upload" accept="image/*" multiple>
       <div id="catalog"></div>
@@ -63,16 +54,19 @@
       </div>
     </section>
 
-    <section id="map-section" class="hidden">
+    <section id="map-section">
       <h2>Mapa da Visita</h2>
       <div id="map" style="height:300px;"></div>
     </section>
 
-    <section id="history-section" class="hidden">
+    <section id="history-section">
       <h2>Histórico de Visitas</h2>
       <button id="export-json">Exportar JSON</button>
       <button id="export-csv">Exportar CSV</button>
       <button id="export-pdf">Exportar PDF</button>
+      <button id="import-json">Importar JSON</button>
+      <input id="import-file" type="file" accept="application/json" style="display:none">
+      <button id="clear-data">Limpar Dados</button>
       <ul id="history-list"></ul>
     </section>
   </main>

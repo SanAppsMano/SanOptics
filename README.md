@@ -5,7 +5,7 @@ Esta é uma aplicação estática para serviços de visita domiciliar de uma ót
 ## Estrutura
 - `public/` contém `index.html`.
 - `css/` contém `styles.css`.
-- `js/` contém `app.js`.
+- `js/` contém `app.js` e `jspdf.umd.min.js`.
 
 ## Deploy no Netlify
 1. Faça login em sua conta Netlify e crie um novo site a partir deste repositório.
@@ -24,5 +24,5 @@ python3 -m http.server 8000
 
 Depois acesse `http://localhost:8000` no navegador.
 
-A aplicação usa um login simples. Utilize o usuário `admin` e a senha `1234` para acessar as telas de cadastro de visitas.
-As visitas ficam salvas no `localStorage` e podem ser exportadas em JSON, CSV ou PDF profissional.
+Não há tela de login: ao abrir o site é possível cadastrar visitas imediatamente. Os dados ficam salvos no `localStorage` do navegador.
+Use os botões disponíveis para exportar ou importar um arquivo JSON, gerar um PDF profissional (uma visita por página) ou limpar todo o histórico.

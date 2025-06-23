@@ -1,8 +1,5 @@
-// Login simples com credenciais fixas
-
+// Script principal para registrar visitas
 document.addEventListener('DOMContentLoaded', () => {
-  const loginSection = document.getElementById('login-section');
-  const loginForm = document.getElementById('login-form');
   const visitSection = document.getElementById('visit-section');
   const visitForm = document.getElementById('visit-form');
   const catalogSection = document.getElementById('catalog-section');
@@ -11,13 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const mapSection = document.getElementById('map-section');
   const historySection = document.getElementById('history-section');
   const historyList = document.getElementById('history-list');
+  const importBtn = document.getElementById('import-json');
+  const importFile = document.getElementById('import-file');
+  const clearBtn = document.getElementById('clear-data');
 
   let map;
   const markers = [];
 
   function initMap() {
     map = L.map('map').setView([-14.2350, -51.9253], 4);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
   }
@@ -81,27 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
     link.click();
   }
 
-  const VALID_USER = 'admin';
-  const VALID_PASS = '1234';
-
-  loginSection.classList.remove('hidden');
-
-  loginForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const user = document.getElementById('login-username').value;
-    const pass = document.getElementById('login-password').value;
-    if (user === VALID_USER && pass === VALID_PASS) {
-      loginSection.classList.add('hidden');
-      visitSection.classList.remove('hidden');
-      catalogSection.classList.remove('hidden');
-      mapSection.classList.remove('hidden');
-      historySection.classList.remove('hidden');
-      initMap();
-      loadHistory();
-    } else {
-      alert('Usuário ou senha inválidos');
-    }
-  });
+  visitSection.classList.remove('hidden');
+  catalogSection.classList.remove('hidden');
+  mapSection.classList.remove('hidden');
+  historySection.classList.remove('hidden');
+  initMap();
+  loadHistory();
 
   visitForm.addEventListener('submit', e => {
     e.preventDefault();
@@ -150,15 +135,61 @@ document.addEventListener('DOMContentLoaded', () => {
     download('visitas.csv', csv);
   });
 
+  importBtn.addEventListener('click', () => importFile.click());
+
+  importFile.addEventListener('change', () => {
+    const file = importFile.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (Array.isArray(data)) {
+          localStorage.setItem('visits', JSON.stringify(data));
+          historyList.innerHTML = '';
+          markers.forEach(m => m.marker.remove());
+          markers.length = 0;
+          data.forEach(v => {
+            addVisitToHistory(v);
+            addMarker(v);
+          });
+        } else {
+          alert('Arquivo inválido');
+        }
+      } catch (err) {
+        alert('Arquivo inválido');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    if (confirm('Deseja remover todos os dados?')) {
+      localStorage.clear();
+      historyList.innerHTML = '';
+      markers.forEach(m => m.marker.remove());
+      markers.length = 0;
+    }
+  });
+
   if (typeof jsPDF !== 'undefined') {
     document.getElementById('export-pdf').addEventListener('click', () => {
       const visits = JSON.parse(localStorage.getItem('visits') || '[]');
       const doc = new jsPDF();
       visits.forEach((v, idx) => {
-        doc.text(`Visita ${idx + 1}`, 10, 10);
-        doc.text(`Nome: ${v.clientName}`, 10, 20);
-        doc.text(`Endereço: ${v.clientAddress}`, 10, 30);
-        doc.text(`Data/Hora: ${v.timestamp}`, 10, 40);
+        doc.setFontSize(16);
+        doc.text(`Visita ${idx + 1}`, 10, 15);
+        doc.setFontSize(12);
+        let y = 30;
+        doc.text(`Nome: ${v.clientName}`, 10, y); y += 10;
+        doc.text(`Endereço: ${v.clientAddress}`, 10, y); y += 10;
+        doc.text(`Telefone: ${v.clientPhone}`, 10, y); y += 10;
+        doc.text(`Email: ${v.clientEmail}`, 10, y); y += 10;
+        doc.text(`Data/Hora: ${v.timestamp}`, 10, y); y += 10;
+        doc.text(`Dioptria: ${v.diopters}`, 10, y); y += 10;
+        if (v.recipeImage) {
+          doc.addImage(v.recipeImage, 'JPEG', 10, y, 50, 50);
+        }
         if (idx < visits.length - 1) doc.addPage();
       });
       doc.save('visitas.pdf');
