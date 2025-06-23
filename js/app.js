@@ -1,0 +1,314 @@
+// Script principal para registrar visitas
+document.addEventListener('DOMContentLoaded', () => {
+  const visitSection = document.getElementById('visit-section');
+  const visitForm = document.getElementById('visit-form');
+  const catalogSection = document.getElementById('catalog-section');
+  const catalogUpload = document.getElementById('catalog-upload');
+  const catalogDiv = document.getElementById('catalog');
+  const historySection = document.getElementById('history-section');
+  const historyList = document.getElementById('history-list');
+  const importBtn = document.getElementById('import-json');
+  const importFile = document.getElementById('import-file');
+  const clearBtn = document.getElementById('clear-data');
+  const exportJsonBtn = document.getElementById('export-json');
+  const exportCsvBtn = document.getElementById('export-csv');
+  const exportPdfBtn = document.getElementById('export-pdf');
+
+  const { jsPDF } = window.jspdf || {};
+
+  const signatureCanvas = document.getElementById('signature-canvas');
+  const signatureCtx = signatureCanvas.getContext('2d');
+  let drawing = false;
+
+  function startDraw(x, y) {
+    drawing = true;
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(x, y);
+  }
+
+  function draw(x, y) {
+    if (!drawing) return;
+    signatureCtx.lineTo(x, y);
+    signatureCtx.stroke();
+  }
+
+  function stopDraw() {
+    drawing = false;
+  }
+
+  signatureCanvas.addEventListener('mousedown', e => startDraw(e.offsetX, e.offsetY));
+  signatureCanvas.addEventListener('mousemove', e => draw(e.offsetX, e.offsetY));
+  signatureCanvas.addEventListener('mouseup', stopDraw);
+  signatureCanvas.addEventListener('mouseleave', stopDraw);
+  signatureCanvas.addEventListener('touchstart', e => {
+    const rect = signatureCanvas.getBoundingClientRect();
+    const t = e.touches[0];
+    startDraw(t.clientX - rect.left, t.clientY - rect.top);
+    e.preventDefault();
+  });
+  signatureCanvas.addEventListener('touchmove', e => {
+    const rect = signatureCanvas.getBoundingClientRect();
+    const t = e.touches[0];
+    draw(t.clientX - rect.left, t.clientY - rect.top);
+    e.preventDefault();
+  });
+  signatureCanvas.addEventListener('touchend', stopDraw);
+
+  const dpCanvas = document.getElementById('dp-canvas');
+  const dpCtx = dpCanvas.getContext('2d');
+  const dpUpload = document.getElementById('dp-upload');
+  const dpResult = document.getElementById('dp-result');
+  let dpPoints = [];
+  let dpImage = null;
+
+  dpUpload.addEventListener('change', () => {
+    const file = dpUpload.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      dpImage = new Image();
+      dpImage.onload = () => {
+        dpCanvas.width = dpImage.width;
+        dpCanvas.height = dpImage.height;
+        dpCtx.drawImage(dpImage, 0, 0);
+        dpPoints = [];
+        dpResult.textContent = '0';
+      };
+      dpImage.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  dpCanvas.addEventListener('click', e => {
+    if (!dpImage) return;
+    const rect = dpCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (dpPoints.length >= 2) {
+      dpCtx.drawImage(dpImage, 0, 0);
+      dpPoints = [];
+    }
+    dpCtx.fillStyle = 'red';
+    dpCtx.beginPath();
+    dpCtx.arc(x, y, 4, 0, Math.PI * 2);
+    dpCtx.fill();
+    dpPoints.push({ x, y });
+    if (dpPoints.length === 2) {
+      const dx = dpPoints[1].x - dpPoints[0].x;
+      const dy = dpPoints[1].y - dpPoints[0].y;
+      const distPx = Math.hypot(dx, dy);
+      const distMm = (distPx * 0.264583).toFixed(1);
+      dpResult.textContent = distMm;
+    }
+  });
+
+
+  function addVisitToHistory(visit) {
+    const li = document.createElement('li');
+    const time = document.createElement('strong');
+    time.textContent = visit.timestamp;
+    li.appendChild(time);
+    const name = document.createElement('span');
+    name.textContent = ` - ${visit.clientName}`;
+    li.appendChild(name);
+    if (visit.recipeImage) {
+      const img = document.createElement('img');
+      img.src = visit.recipeImage;
+      img.style.maxWidth = '50px';
+      img.style.marginLeft = '0.5rem';
+      li.appendChild(img);
+    }
+    li.style.cursor = 'default';
+    historyList.appendChild(li);
+  }
+
+  function saveVisit(visit) {
+    const visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    visits.push(visit);
+    localStorage.setItem('visits', JSON.stringify(visits));
+    addVisitToHistory(visit);
+    updateButtons();
+    visitForm.reset();
+  }
+
+  function loadHistory() {
+    const visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    visits.forEach(v => {
+      addVisitToHistory(v);
+    });
+  }
+
+  function download(filename, text) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+    link.download = filename;
+    link.click();
+  }
+
+  function updateButtons() {
+    const visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    const hasData = visits.length > 0;
+    exportJsonBtn.disabled = !hasData;
+    exportCsvBtn.disabled = !hasData;
+    exportPdfBtn.disabled = !hasData;
+    clearBtn.disabled = !hasData;
+  }
+
+  visitSection.classList.remove('hidden');
+  catalogSection.classList.remove('hidden');
+  historySection.classList.remove('hidden');
+  loadHistory();
+  updateButtons();
+
+  visitForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const visit = {
+      clientName: document.getElementById('client-name').value,
+      clientPhone: document.getElementById('client-phone').value,
+      clientEmail: document.getElementById('client-email').value,
+      clientAddress: document.getElementById('client-address').value,
+      diopters: document.getElementById('diopters').value,
+      timestamp: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+      latitude: null,
+      longitude: null,
+      recipeImage: null,
+      signature: signatureCanvas.toDataURL(),
+      pupilDistance: parseFloat(dpResult.textContent) || null
+    };
+
+    const file = document.getElementById('recipe-upload').files[0];
+
+    const finalize = () => {
+      const done = () => {
+        saveVisit(visit);
+        updateButtons();
+        signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        if (dpImage) {
+          dpCtx.drawImage(dpImage, 0, 0);
+        } else {
+          dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
+        }
+        dpPoints = [];
+        dpResult.textContent = '0';
+      };
+      navigator.geolocation.getCurrentPosition(pos => {
+        visit.latitude = pos.coords.latitude;
+        visit.longitude = pos.coords.longitude;
+        done();
+      }, done);
+    };
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        visit.recipeImage = ev.target.result;
+        finalize();
+      };
+      reader.readAsDataURL(file);
+    } else {
+      finalize();
+    }
+  });
+
+  document.getElementById('export-json').addEventListener('click', () => {
+    const visits = localStorage.getItem('visits') || '[]';
+    download('visitas.json', visits);
+  });
+
+  document.getElementById('export-csv').addEventListener('click', () => {
+    const visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    const csv = visits.map(v => `${v.timestamp};${v.clientName};${v.clientAddress}`).join('\n');
+    download('visitas.csv', csv);
+  });
+
+  importBtn.addEventListener('click', () => importFile.click());
+
+  importFile.addEventListener('change', () => {
+    const file = importFile.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (Array.isArray(data)) {
+          localStorage.setItem('visits', JSON.stringify(data));
+          historyList.innerHTML = '';
+          data.forEach(v => {
+            addVisitToHistory(v);
+          });
+          updateButtons();
+        } else {
+          alert('Arquivo inválido');
+        }
+      } catch (err) {
+        alert('Arquivo inválido');
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    if (confirm('Deseja remover todos os dados?')) {
+      localStorage.clear();
+      historyList.innerHTML = '';
+      updateButtons();
+    }
+  });
+
+  if (jsPDF) {
+    document.getElementById('export-pdf').addEventListener('click', () => {
+      const visits = JSON.parse(localStorage.getItem('visits') || '[]');
+      const doc = new jsPDF();
+      visits.forEach((v, idx) => {
+        doc.setFontSize(16);
+        doc.text(`Visita ${idx + 1}`, 10, 15);
+        doc.setFontSize(12);
+        let y = 30;
+        doc.text(`Nome: ${v.clientName}`, 10, y); y += 10;
+        doc.text(`Endereço: ${v.clientAddress}`, 10, y); y += 10;
+        doc.text(`Telefone: ${v.clientPhone}`, 10, y); y += 10;
+        doc.text(`Email: ${v.clientEmail}`, 10, y); y += 10;
+        doc.text(`Data/Hora: ${v.timestamp}`, 10, y); y += 10;
+        doc.text(`Dioptria: ${v.diopters}`, 10, y); y += 10;
+        if (v.pupilDistance) {
+          doc.text(`DP: ${v.pupilDistance} mm`, 10, y); y += 10;
+        }
+        if (v.recipeImage) {
+          doc.addImage(v.recipeImage, 'JPEG', 10, y, 50, 50);
+          y += 55;
+        }
+        if (v.signature) {
+          doc.text('Assinatura:', 10, y); y += 5;
+          doc.addImage(v.signature, 'PNG', 10, y, 80, 40); y += 45;
+        }
+        if (idx < visits.length - 1) doc.addPage();
+      });
+      doc.save('visitas.pdf');
+    });
+
+    const budgetBtn = document.getElementById('pdf-btn');
+    if (budgetBtn) {
+      budgetBtn.addEventListener('click', () => {
+        const doc = new jsPDF();
+        doc.text('Orçamento SanOptics', 10, 10);
+        doc.text(`Total: ${document.getElementById('total-price').textContent}`, 10, 20);
+        doc.save('orcamento.pdf');
+      });
+    }
+  }
+
+  catalogUpload.addEventListener('change', () => {
+    const files = Array.from(catalogUpload.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.maxWidth = '100px';
+        img.style.margin = '0.25rem';
+        catalogDiv.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+});
