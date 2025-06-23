@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const importFile = document.getElementById('import-file');
   const clearBtn = document.getElementById('clear-data');
   const exportJsonBtn = document.getElementById('export-json');
-  const exportCsvBtn = document.getElementById('export-csv');
   const exportPdfBtn = document.getElementById('export-pdf');
 
   const { jsPDF } = window.jspdf || {};
@@ -236,7 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
     const hasData = visits.length > 0;
     exportJsonBtn.disabled = !hasData;
-    exportCsvBtn.disabled = !hasData;
     exportPdfBtn.disabled = !hasData;
     clearBtn.disabled = !hasData;
   }
@@ -355,11 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
     download('visitas.json', visits);
   });
 
-  document.getElementById('export-csv').addEventListener('click', () => {
-    const visits = JSON.parse(localStorage.getItem('visits') || '[]');
-    const csv = visits.map(v => `${v.timestamp};${v.clientName};${v.clientAddress}`).join('\n');
-    download('visitas.csv', csv);
-  });
 
   importBtn.addEventListener('click', () => importFile.click());
 
@@ -407,22 +400,30 @@ document.addEventListener('DOMContentLoaded', () => {
       const visits = JSON.parse(localStorage.getItem('visits') || '[]');
       const doc = new jsPDF();
       visits.forEach((v, idx) => {
-        doc.setFontSize(16);
-        doc.text(`Visita ${idx + 1}`, 10, 15);
+        doc.setFontSize(18);
+        doc.text('Relatório de Visita', 105, 15, { align: 'center' });
         doc.setFontSize(12);
         let y = 30;
-        doc.text(`Nome: ${v.clientName}`, 10, y); y += 10;
-        doc.text(`Endereço: ${v.clientAddress}`, 10, y); y += 10;
-        doc.text(`Telefone: ${v.clientPhone}`, 10, y); y += 10;
-        doc.text(`Email: ${v.clientEmail}`, 10, y); y += 10;
-        doc.text(`Data/Hora: ${v.timestamp}`, 10, y); y += 10;
-        doc.text(`Dioptria: ${v.diopters}`, 10, y); y += 10;
+        doc.text(`Nome: ${v.clientName}`, 10, y); y += 7;
+        doc.text(`Endereço: ${v.clientAddress}`, 10, y); y += 7;
+        doc.text(`Telefone: ${v.clientPhone}`, 10, y); y += 7;
+        doc.text(`Email: ${v.clientEmail}`, 10, y); y += 7;
+        doc.text(`Data/Hora: ${v.timestamp}`, 10, y); y += 7;
+        if (v.latitude && v.longitude) {
+          doc.text(`Localização: ${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}`, 10, y); y += 7;
+        }
+        doc.text(`Dioptria: ${v.diopters}`, 10, y); y += 7;
         if (v.pupilDistance) {
-          doc.text(`DP: ${v.pupilDistance} mm`, 10, y); y += 10;
+          doc.text(`Distância Pupilar: ${v.pupilDistance} mm`, 10, y); y += 7;
         }
         if (v.recipeImage) {
-          doc.addImage(v.recipeImage, 'JPEG', 10, y, 50, 50);
-          y += 55;
+          doc.text('Receita:', 10, y); y += 5;
+          doc.addImage(v.recipeImage, 'JPEG', 10, y, 80, 80);
+          y += 85;
+        }
+        if (v.dpPhoto) {
+          doc.text('Foto DP:', 110, 30);
+          doc.addImage(v.dpPhoto, 'JPEG', 110, 35, 80, 60);
         }
         if (v.signature) {
           doc.text('Assinatura:', 10, y); y += 5;
