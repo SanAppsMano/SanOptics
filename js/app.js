@@ -1,12 +1,8 @@
-// Cadastro e login simples
+// Login simples com credenciais fixas
 
 document.addEventListener('DOMContentLoaded', () => {
-  const registerSection = document.getElementById('register-section');
-  const registerForm = document.getElementById('register-form');
   const loginSection = document.getElementById('login-section');
   const loginForm = document.getElementById('login-form');
-  const configSection = document.getElementById('config-section');
-  const configForm = document.getElementById('config-form');
   const visitSection = document.getElementById('visit-section');
   const visitForm = document.getElementById('visit-form');
   const catalogSection = document.getElementById('catalog-section');
@@ -85,62 +81,23 @@ document.addEventListener('DOMContentLoaded', () => {
     link.click();
   }
 
-  const storedUser = localStorage.getItem('username');
-  const storedPass = localStorage.getItem('password');
-  const storedName = localStorage.getItem('opticName');
-  const storedEmail = localStorage.getItem('adminEmail');
+  const VALID_USER = 'admin';
+  const VALID_PASS = '1234';
 
-  if (!storedUser || !storedPass) {
-    registerSection.classList.remove('hidden');
-  } else if (!storedName || !storedEmail) {
-    configSection.classList.remove('hidden');
-  } else {
-    loginSection.classList.remove('hidden');
-  }
-
-  registerForm.addEventListener('submit', e => {
-    e.preventDefault();
-    localStorage.setItem('username', document.getElementById('reg-username').value);
-    localStorage.setItem('password', document.getElementById('reg-password').value);
-    localStorage.setItem('opticName', document.getElementById('reg-optic').value);
-    localStorage.setItem('adminEmail', document.getElementById('reg-email').value);
-    registerSection.classList.add('hidden');
-    loginSection.classList.remove('hidden');
-    alert('Cadastro realizado. Faça login para continuar.');
-  });
-
-  configForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const nameInput = document.getElementById('optic-name');
-    const emailInput = document.getElementById('admin-email');
-    if (!nameInput || !emailInput) return;
-    localStorage.setItem('opticName', nameInput.value);
-    localStorage.setItem('adminEmail', emailInput.value);
-    configSection.classList.add('hidden');
-    visitSection.classList.remove('hidden');
-    catalogSection.classList.remove('hidden');
-    mapSection.classList.remove('hidden');
-    historySection.classList.remove('hidden');
-    initMap();
-    loadHistory();
-  });
+  loginSection.classList.remove('hidden');
 
   loginForm.addEventListener('submit', e => {
     e.preventDefault();
     const user = document.getElementById('login-username').value;
     const pass = document.getElementById('login-password').value;
-    if (user === localStorage.getItem('username') && pass === localStorage.getItem('password')) {
+    if (user === VALID_USER && pass === VALID_PASS) {
       loginSection.classList.add('hidden');
-      if (!localStorage.getItem('opticName') || !localStorage.getItem('adminEmail')) {
-        configSection.classList.remove('hidden');
-      } else {
-        visitSection.classList.remove('hidden');
-        catalogSection.classList.remove('hidden');
-        mapSection.classList.remove('hidden');
-        historySection.classList.remove('hidden');
-        initMap();
-        loadHistory();
-      }
+      visitSection.classList.remove('hidden');
+      catalogSection.classList.remove('hidden');
+      mapSection.classList.remove('hidden');
+      historySection.classList.remove('hidden');
+      initMap();
+      loadHistory();
     } else {
       alert('Usuário ou senha inválidos');
     }
