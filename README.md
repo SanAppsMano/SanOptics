@@ -24,4 +24,6 @@ python3 -m http.server 8000
 
 Depois acesse `http://localhost:8000` no navegador.
 
-Após login com o usuário padrão `@Sandes` e senha `Sandes@123`, cadastre as informações de administrador e comece a registrar visitas.
+Ao abrir o site pela primeira vez, cadastre o nome da ótica e o email do responsável. Esses dados ficam salvos no `localStorage`.
+Em acessos seguintes, informe o mesmo nome e email na tela de login para liberar o formulário de visitas.
+As visitas podem ser exportadas em JSON, CSV ou PDF profissional.
