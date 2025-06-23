@@ -29,4 +29,4 @@ O campo de assinatura no formulário permite desenhar com o mouse ou toque, e a 
 O orçamento exibido no catálogo também pode ser salvo em PDF pelo botão "Gerar PDF".
 
 ## Armazenamento
-As imagens enviadas são reduzidas automaticamente antes do salvamento para economizar espaço. Caso o limite de `localStorage` seja atingido, o aplicativo exibirá um aviso sugerindo exportar ou remover visitas antigas.
+As imagens enviadas são reduzidas automaticamente antes do salvamento para economizar espaço. Caso o limite de `localStorage` seja atingido, o aplicativo exibirá um aviso sugerindo exportar ou remover visitas antigas. Para evitar exceder a capacidade, somente a foto da receita é mantida no histórico; a imagem utilizada para medir a distância pupilar não é mais armazenada.

@@ -231,13 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
       img.style.marginLeft = '0.5rem';
       li.appendChild(img);
     }
-    if (visit.dpPhoto) {
-      const dpi = document.createElement('img');
-      dpi.src = visit.dpPhoto;
-      dpi.style.maxWidth = '50px';
-      dpi.style.marginLeft = '0.5rem';
-      li.appendChild(dpi);
-    }
     li.style.cursor = 'pointer';
     historyList.appendChild(li);
   }
@@ -310,25 +303,10 @@ document.addEventListener('DOMContentLoaded', () => {
       recipePreview.style.display = 'none';
       recipeFilename.textContent = 'Nenhum';
     }
-    if (v.dpPhoto) {
-      dpImage = new Image();
-      dpImage.onload = () => {
-        dpCanvas.width = dpImage.width;
-        dpCanvas.height = dpImage.height;
-        dpCanvas.dataset.originalWidth = dpImage.width;
-        dpCanvas.dataset.originalHeight = dpImage.height;
-        dpCtx.drawImage(dpImage, 0, 0);
-        reduceDpCanvas();
-      };
-      dpImage.src = v.dpPhoto;
-      dpPhotoSrc = v.dpPhoto;
-      dpFilename.textContent = 'carregado';
-    } else {
-      dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
-      dpImage = null;
-      dpPhotoSrc = null;
-      dpFilename.textContent = 'Nenhum';
-    }
+    dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
+    dpImage = null;
+    dpPhotoSrc = null;
+    dpFilename.textContent = 'Nenhum';
     dpResult.textContent = v.pupilDistance ? v.pupilDistance : '0';
     if (v.signature) {
       const img = new Image();
@@ -360,8 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
       longitude: null,
       recipeImage: null,
       signature: signatureCanvas.toDataURL(),
-      pupilDistance: parseFloat(dpResult.textContent) || null,
-      dpPhoto: dpPhotoSrc
+      pupilDistance: parseFloat(dpResult.textContent) || null
     };
 
     const file = document.getElementById('recipe-upload').files[0];
@@ -471,10 +448,6 @@ document.addEventListener('DOMContentLoaded', () => {
           doc.text('Receita:', 10, y); y += 5;
           doc.addImage(v.recipeImage, 'JPEG', 10, y, 70, 70);
           y += 75;
-        }
-        if (v.dpPhoto) {
-          doc.text('Foto DP:', 110, 30);
-          doc.addImage(v.dpPhoto, 'JPEG', 110, 35, 60, 45);
         }
         if (v.signature) {
           doc.text('Assinatura:', 10, y); y += 5;
