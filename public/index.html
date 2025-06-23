@@ -26,7 +26,11 @@
         </fieldset>
         <fieldset>
           <legend>Receita Ótica</legend>
-          <input type="file" id="recipe-upload" name="recipe-upload" accept="image/*">
+          <div class="file-input">
+            <label for="recipe-upload" class="icon-btn" aria-label="Adicionar foto">📷</label>
+            <span id="recipe-filename" class="file-name">Nenhum</span>
+            <input type="file" id="recipe-upload" name="recipe-upload" accept="image/*" capture="environment">
+          </div>
           <img id="recipe-preview" class="preview-image" style="display:none" />
         </fieldset>
         <fieldset>
@@ -34,7 +38,11 @@
           <label>Miopia/hipermetropia/astigmatismo OD/OE</label>
           <input type="text" id="diopters" name="diopters">
           <label>Distância Pupilar</label>
-          <input type="file" id="dp-upload" accept="image/*">
+          <div class="file-input">
+            <label for="dp-upload" class="icon-btn" aria-label="Adicionar foto">📷</label>
+            <span id="dp-filename" class="file-name">Nenhum</span>
+            <input type="file" id="dp-upload" accept="image/*" capture="environment">
+          </div>
           <canvas id="dp-canvas" width="300" height="100"></canvas>
           <p class="help-text">A imagem será reduzida após a marcação. Toque nela para alternar entre tamanho reduzido e original.</p>
           <p>DP: <span id="dp-result">0</span> mm</p>
@@ -54,7 +62,11 @@
 
     <section id="catalog-section">
       <h2>Catálogo</h2>
-      <input type="file" id="catalog-upload" accept="image/*" multiple>
+      <div class="file-input">
+        <label for="catalog-upload" class="icon-btn" aria-label="Adicionar fotos">🖼️</label>
+        <span id="catalog-filename" class="file-name">Nenhum</span>
+        <input type="file" id="catalog-upload" accept="image/*" multiple capture="environment">
+      </div>
       <div id="catalog"></div>
       <div id="budget">
         <h3>Orçamento</h3>

@@ -5,8 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const catalogSection = document.getElementById('catalog-section');
   const catalogUpload = document.getElementById('catalog-upload');
   const catalogDiv = document.getElementById('catalog');
+  const catalogFilename = document.getElementById('catalog-filename');
   const recipeUpload = document.getElementById('recipe-upload');
   const recipePreview = document.getElementById('recipe-preview');
+  const recipeFilename = document.getElementById('recipe-filename');
   const historySection = document.getElementById('history-section');
   const historyList = document.getElementById('history-list');
   const importBtn = document.getElementById('import-json');
@@ -16,6 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportPdfBtn = document.getElementById('export-pdf');
 
   const { jsPDF } = window.jspdf || {};
+
+  function resetFileNames() {
+    recipeFilename.textContent = 'Nenhum';
+    dpFilename.textContent = 'Nenhum';
+    catalogFilename.textContent = 'Nenhum';
+  }
 
   const signatureCanvas = document.getElementById('signature-canvas');
   const signatureCtx = signatureCanvas.getContext('2d');
@@ -88,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dpCanvas = document.getElementById('dp-canvas');
   const dpCtx = dpCanvas.getContext('2d');
   const dpUpload = document.getElementById('dp-upload');
+  const dpFilename = document.getElementById('dp-filename');
   const dpResult = document.getElementById('dp-result');
   let dpPoints = [];
   let dpImage = null;
@@ -95,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   recipeUpload.addEventListener('change', () => {
     const file = recipeUpload.files[0];
+    recipeFilename.textContent = file ? file.name : 'Nenhum';
     if (!file) {
       recipePreview.src = '';
       recipePreview.style.display = 'none';
@@ -106,6 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
       recipePreview.style.display = 'block';
     };
     reader.readAsDataURL(file);
+  });
+
+  recipePreview.addEventListener('click', () => {
+    if (recipePreview.style.display === 'none') return;
+    recipePreview.classList.toggle('zoomed');
   });
 
   function reduceDpCanvas() {
@@ -124,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   dpUpload.addEventListener('change', () => {
     const file = dpUpload.files[0];
+    dpFilename.textContent = file ? file.name : 'Nenhum';
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
@@ -209,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     visitForm.reset();
     recipePreview.src = '';
     recipePreview.style.display = 'none';
+    resetFileNames();
     dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
     dpImage = null;
     dpPhotoSrc = null;
@@ -244,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
   historySection.classList.remove('hidden');
   loadHistory();
   updateButtons();
+  resetFileNames();
 
   historyList.addEventListener('click', e => {
     const li = e.target.closest('li');
@@ -260,9 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (v.recipeImage) {
       recipePreview.src = v.recipeImage;
       recipePreview.style.display = 'block';
+      recipeFilename.textContent = 'carregado';
     } else {
       recipePreview.src = '';
       recipePreview.style.display = 'none';
+      recipeFilename.textContent = 'Nenhum';
     }
     if (v.dpPhoto) {
       dpImage = new Image();
@@ -276,10 +296,12 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       dpImage.src = v.dpPhoto;
       dpPhotoSrc = v.dpPhoto;
+      dpFilename.textContent = 'carregado';
     } else {
       dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
       dpImage = null;
       dpPhotoSrc = null;
+      dpFilename.textContent = 'Nenhum';
     }
     dpResult.textContent = v.pupilDistance ? v.pupilDistance : '0';
     if (v.signature) {
@@ -384,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
       recipePreview.src = '';
       recipePreview.style.display = 'none';
       catalogDiv.innerHTML = '';
+      resetFileNames();
       dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
       signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
       closeSignature();
@@ -450,6 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   catalogUpload.addEventListener('change', () => {
     const files = Array.from(catalogUpload.files);
+    catalogFilename.textContent = files.length ? `${files.length} arquivo(s)` : 'Nenhum';
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = e => {

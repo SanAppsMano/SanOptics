@@ -37,6 +37,19 @@ canvas {
   margin-top: 0.5rem;
 }
 
+.preview-image.zoomed {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90vw;
+  max-height: 90vh;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
 #dp-canvas.reduced {
   width: 100%;
   max-width: 300px;
@@ -89,6 +102,21 @@ canvas {
   height: 40px;
   border-radius: 4px;
   border: 1px solid #333;
+}
+
+.file-input {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.file-input input[type="file"] {
+  display: none;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  color: #555;
 }
 @media (min-width: 600px) {
   form {
