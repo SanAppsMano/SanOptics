@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const importFile = document.getElementById('import-file');
   const clearBtn = document.getElementById('clear-data');
   const exportJsonBtn = document.getElementById('export-json');
-  const exportPdfBtn = document.getElementById('export-pdf');
   const savingOverlay = document.getElementById('saving-overlay');
   const visitCount = document.getElementById('visit-count');
 
@@ -287,7 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
     const hasData = visits.length > 0;
     exportJsonBtn.disabled = !hasData;
-    exportPdfBtn.disabled = !hasData;
     clearBtn.disabled = !hasData;
     updateVisitCount();
   }
@@ -460,54 +458,6 @@ document.addEventListener('DOMContentLoaded', () => {
       updateButtons();
     }
   });
-
-  if (jsPDF) {
-    document.getElementById('export-pdf').addEventListener('click', () => {
-      const visits = JSON.parse(localStorage.getItem('visits') || '[]');
-      const doc = new jsPDF();
-      const generated = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-      visits.forEach((v, idx) => {
-        doc.setFontSize(18);
-        doc.text('Relatório de Visita', 105, 15, { align: 'center' });
-        doc.setFontSize(12);
-        let y = 30;
-        doc.text(`Nome: ${v.clientName}`, 10, y); y += 7;
-        doc.text(`Endereço: ${v.clientAddress}`, 10, y); y += 7;
-        doc.text(`Telefone: ${v.clientPhone}`, 10, y); y += 7;
-        doc.text(`Email: ${v.clientEmail}`, 10, y); y += 7;
-        doc.text(`Data/Hora: ${v.timestamp}`, 10, y); y += 7;
-        if (v.latitude && v.longitude) {
-          doc.text(`Localização: ${v.latitude.toFixed(5)}, ${v.longitude.toFixed(5)}`, 10, y); y += 7;
-        }
-        doc.text(`Dioptria: ${v.diopters}`, 10, y); y += 7;
-        if (v.pupilDistance) {
-          doc.text(`Distância Pupilar: ${v.pupilDistance} mm`, 10, y); y += 7;
-        }
-        if (v.recipeImage) {
-          doc.text('Receita:', 10, y); y += 5;
-          doc.addImage(v.recipeImage, 'JPEG', 10, y, 70, 70);
-          y += 75;
-        }
-        if (Array.isArray(v.catalogImages) && v.catalogImages.length) {
-          doc.text('Catálogo:', 10, y); y += 5;
-          v.catalogImages.forEach(imgUrl => {
-            doc.addImage(imgUrl, 'JPEG', 10, y, 60, 60);
-            y += 65;
-          });
-        }
-        if (v.signature) {
-          doc.text('Assinatura:', 10, y); y += 5;
-          doc.addImage(v.signature, 'PNG', 10, y, 60, 30); y += 35;
-        }
-        doc.setFontSize(10);
-        doc.text(`Gerado por SanOptics em ${generated}`, 105, 285, { align: 'center' });
-        if (idx < visits.length - 1) doc.addPage();
-      });
-      const ts = getBrTimestamp();
-      doc.save(`Visitas_${ts}.pdf`);
-    });
-
-  }
 
   catalogUpload.addEventListener('change', () => {
     const files = Array.from(catalogUpload.files);
