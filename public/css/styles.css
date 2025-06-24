@@ -101,6 +101,11 @@ canvas {
   cursor: pointer;
 }
 
+.help-btn {
+  margin-left: 0.25rem;
+  color: #0069d9;
+}
+
 .icon-btn:focus {
   outline: none;
 }
