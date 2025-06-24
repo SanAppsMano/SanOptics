@@ -24,7 +24,7 @@ python3 -m http.server 8000
 Depois acesse `http://localhost:8000` no navegador.
 
 Não há tela de login: ao abrir o site é possível cadastrar visitas imediatamente. Os dados ficam salvos no `localStorage` do navegador.
-Use os botões disponíveis para exportar ou importar um arquivo JSON, gerar um PDF profissional (uma visita por página) ou limpar todo o histórico.
+Use os botões disponíveis para exportar ou importar um arquivo JSON, gerar um PDF profissional (uma visita por página) ou limpar todo o histórico. Ao exportar, os nomes dos arquivos incluem a data e hora atuais no formato `Visitas_YYYY-MM-DD_HH-MM.pdf` ou `Exportado_YYYY-MM-DD_HH-MM.json`.
 O campo de assinatura no formulário permite desenhar com o mouse ou toque, e a assinatura é incluída no PDF gerado.
 O título "Histórico de Visitas" exibe, entre parênteses, a quantidade de registros salvos.
 

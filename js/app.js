@@ -398,7 +398,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('export-json').addEventListener('click', () => {
     const visits = localStorage.getItem('visits') || '[]';
-    download('visitas.json', visits);
+    const ts = new Date().toISOString().replace(/[:]/g, '-').replace('T', '_').split('.')[0];
+    download(`Exportado_${ts}.json`, visits);
   });
 
 
@@ -486,7 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.text(`Gerado por SanOptics em ${generated}`, 105, 285, { align: 'center' });
         if (idx < visits.length - 1) doc.addPage();
       });
-      doc.save('visitas.pdf');
+      const ts = new Date().toISOString().replace(/[:]/g, '-').replace('T', '_').split('.')[0];
+      doc.save(`Visitas_${ts}.pdf`);
     });
 
   }
