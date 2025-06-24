@@ -18,6 +18,10 @@ main {
   display: none;
 }
 
+.modal.hidden {
+  display: none;
+}
+
 /* Ensure overlay stays hidden until a save begins */
 #saving-overlay.hidden {
   display: none;

@@ -149,6 +149,10 @@ canvas {
   z-index: 2100;
 }
 
+.modal.hidden {
+  display: none;
+}
+
 .modal-content {
   background: #fff;
   padding: 1rem;
