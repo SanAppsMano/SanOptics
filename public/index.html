@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SanOptics</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script defer src="js/jspdf.umd.min.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+  <header>
+    <h1>SanOptics</h1>
+  </header>
+  <main>
+
+    <section id="visit-section">
+      <h2>Cadastro da Visita</h2>
+      <form id="visit-form" netlify enctype="multipart/form-data">
+        <fieldset>
+          <legend>Dados do Cliente</legend>
+          <input type="text" id="client-name" name="client-name" placeholder="Nome" required>
+          <input type="tel" id="client-phone" name="client-phone" placeholder="Telefone" required>
+          <input type="email" id="client-email" name="client-email" placeholder="Email" required>
+          <input type="text" id="client-address" name="client-address" placeholder="Endereço" required>
+        </fieldset>
+        <fieldset>
+          <legend>Receita Ótica</legend>
+          <div class="file-input">
+            <label for="recipe-upload" class="icon-btn" aria-label="Adicionar foto">📷</label>
+            <span id="recipe-filename" class="file-name">Nenhum</span>
+            <input type="file" id="recipe-upload" name="recipe-upload" accept="image/*" capture="environment">
+          </div>
+          <img id="recipe-preview" class="preview-image" style="display:none" />
+        </fieldset>
+        <fieldset>
+          <legend>Medições</legend>
+          <label>Miopia/hipermetropia/astigmatismo OD/OE</label>
+          <input type="text" id="diopters" name="diopters">
+          <label>Distância Pupilar</label>
+          <button type="button" id="dp-help-btn" class="icon-btn help-btn" aria-label="Ajuda sobre DP">❓</button>
+          <div class="file-input">
+            <label for="dp-upload" class="icon-btn" aria-label="Adicionar foto">📷</label>
+            <span id="dp-filename" class="file-name">Nenhum</span>
+            <input type="file" id="dp-upload" accept="image/*" capture="environment">
+          </div>
+          <canvas id="dp-canvas" width="300" height="100"></canvas>
+          <p class="help-text">A imagem será reduzida após a marcação. Toque nela para alternar entre tamanho reduzido e original.</p>
+          <p>DP: <span id="dp-result">0</span> mm</p>
+        </fieldset>
+        <fieldset>
+          <legend>Assinatura</legend>
+          <div id="signature-controls">
+            <button type="button" id="open-signature" class="icon-btn" aria-label="Editar assinatura">✏️</button>
+            <button type="button" id="clear-signature" class="icon-btn" aria-label="Limpar assinatura">🗑️</button>
+            <button type="button" id="close-signature" class="icon-btn" aria-label="Concluir assinatura">✅</button>
+          </div>
+          <canvas id="signature-canvas" width="300" height="100"></canvas>
+        </fieldset>
+        <button type="submit">Salvar Visita</button>
+      </form>
+    </section>
+
+    <section id="catalog-section">
+      <h2>Catálogo</h2>
+      <div class="file-input">
+        <label for="catalog-upload" class="icon-btn" aria-label="Adicionar fotos">🖼️</label>
+        <span id="catalog-filename" class="file-name">Nenhum</span>
+        <input type="file" id="catalog-upload" accept="image/*" multiple capture="environment">
+      </div>
+      <div id="catalog"></div>
+    </section>
+
+
+    <section id="history-section">
+      <h2 id="history-title">Histórico de Visitas (<span id="visit-count">0</span>)</h2>
+      <button id="export-json" disabled>Exportar</button>
+      <button id="share-json" disabled>Compartilhar JSON</button>
+      <button id="export-pdf" disabled>Exportar PDF</button>
+      <button id="share-pdf" disabled>Compartilhar PDF</button>
+      <button id="import-json">Importar</button>
+      <input id="import-file" type="file" accept="application/json" style="display:none">
+      <button id="clear-data" disabled>Limpar Dados</button>
+      <ul id="history-list"></ul>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2025 SanOptics</p>
+  </footer>
+  <div id="saving-overlay" class="hidden">
+    <div class="progress">
+      <div class="indeterminate"></div>
+    </div>
+  </div>
+  <div id="dp-help-modal" class="modal hidden">
+    <div class="modal-content">
+      <p>Toque no ícone de câmera para tirar ou escolher uma foto.</p>
+      <p>Toque nos centros das duas pupilas na imagem.</p>
+      <p>O valor da DP (em milímetros) aparece ao lado de “DP”.</p>
+      <button type="button" id="dp-help-close">Fechar</button>
+    </div>
+  </div>
+</body>
+</html>
