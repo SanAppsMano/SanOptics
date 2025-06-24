@@ -17,6 +17,10 @@ main {
 .hidden {
   display: none;
 }
+
+#saving-overlay.hidden {
+  display: none;
+}
 form {
   display: flex;
   flex-direction: column;
