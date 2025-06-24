@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearBtn = document.getElementById('clear-data');
   const exportJsonBtn = document.getElementById('export-json');
   const exportPdfBtn = document.getElementById('export-pdf');
+  const savingOverlay = document.getElementById('saving-overlay');
 
   const { jsPDF } = window.jspdf || {};
 
@@ -327,6 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!confirm('Deseja salvar esta visita?')) {
       return;
     }
+    savingOverlay.classList.remove('hidden');
     const visit = {
       clientName: document.getElementById('client-name').value,
       clientPhone: document.getElementById('client-phone').value,
@@ -346,6 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const finalize = () => {
       const done = () => {
         saveVisit(visit);
+        savingOverlay.classList.add('hidden');
         updateButtons();
         signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
         closeSignature();
