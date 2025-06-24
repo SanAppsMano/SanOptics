@@ -28,6 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const { jsPDF } = window.jspdf || {};
 
+  function getBrTimestamp() {
+    const now = new Date();
+    const pad = n => n.toString().padStart(2, '0');
+    const date = `${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()}`;
+    const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    return `${date}_${time}`;
+  }
+
   function compressImage(file, maxWidth = 800, quality = 0.8) {
     return new Promise(resolve => {
       const reader = new FileReader();
@@ -398,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('export-json').addEventListener('click', () => {
     const visits = localStorage.getItem('visits') || '[]';
-    const ts = new Date().toISOString().replace(/[:]/g, '-').replace('T', '_').split('.')[0];
+    const ts = getBrTimestamp();
     download(`Exportado_${ts}.json`, visits);
   });
 
@@ -487,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.text(`Gerado por SanOptics em ${generated}`, 105, 285, { align: 'center' });
         if (idx < visits.length - 1) doc.addPage();
       });
-      const ts = new Date().toISOString().replace(/[:]/g, '-').replace('T', '_').split('.')[0];
+      const ts = getBrTimestamp();
       doc.save(`Visitas_${ts}.pdf`);
     });
 
