@@ -144,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let dpImage = null;
   let dpPhotoSrc = null;
 
+  if (dpHelpModal) dpHelpModal.classList.add('hidden');
+
   if (dpHelpBtn && dpHelpModal && dpHelpClose) {
     dpHelpBtn.addEventListener('click', () => dpHelpModal.classList.remove('hidden'));
     dpHelpClose.addEventListener('click', () => dpHelpModal.classList.add('hidden'));
@@ -330,6 +332,23 @@ document.addEventListener('DOMContentLoaded', () => {
       recipePreview.src = '';
       recipePreview.style.display = 'none';
       recipeFilename.textContent = 'Nenhum';
+    }
+
+    if (Array.isArray(v.catalogImages) && v.catalogImages.length) {
+      catalogDiv.innerHTML = '';
+      v.catalogImages.forEach(url => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.maxWidth = '100px';
+        img.style.margin = '0.25rem';
+        catalogDiv.appendChild(img);
+      });
+      catalogImages = v.catalogImages.slice();
+      catalogFilename.textContent = `${v.catalogImages.length} arquivo(s)`;
+    } else {
+      catalogDiv.innerHTML = '';
+      catalogImages = [];
+      catalogFilename.textContent = 'Nenhum';
     }
     dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
     dpImage = null;
