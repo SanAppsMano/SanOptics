@@ -68,16 +68,11 @@
         <input type="file" id="catalog-upload" accept="image/*" multiple capture="environment">
       </div>
       <div id="catalog"></div>
-      <div id="budget">
-        <h3>Orçamento</h3>
-        <p>Total: <span id="total-price">0</span></p>
-        <button id="pdf-btn">Gerar PDF</button>
-      </div>
     </section>
 
 
     <section id="history-section">
-      <h2>Histórico de Visitas</h2>
+      <h2 id="history-title">Histórico de Visitas (<span id="visit-count">0</span>)</h2>
       <button id="export-json" disabled>Exportar</button>
       <button id="export-pdf" disabled>Exportar PDF</button>
       <button id="import-json">Importar</button>

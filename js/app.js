@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportJsonBtn = document.getElementById('export-json');
   const exportPdfBtn = document.getElementById('export-pdf');
   const savingOverlay = document.getElementById('saving-overlay');
+  const visitCount = document.getElementById('visit-count');
 
   // Guarantee that the overlay stays hidden until a save operation begins
   if (savingOverlay) {
@@ -273,12 +274,20 @@ document.addEventListener('DOMContentLoaded', () => {
     link.click();
   }
 
+  function updateVisitCount() {
+    const visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    if (visitCount) {
+      visitCount.textContent = visits.length;
+    }
+  }
+
   function updateButtons() {
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
     const hasData = visits.length > 0;
     exportJsonBtn.disabled = !hasData;
     exportPdfBtn.disabled = !hasData;
     clearBtn.disabled = !hasData;
+    updateVisitCount();
   }
 
   visitSection.classList.remove('hidden');
@@ -468,15 +477,6 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.save('visitas.pdf');
     });
 
-    const budgetBtn = document.getElementById('pdf-btn');
-    if (budgetBtn) {
-      budgetBtn.addEventListener('click', () => {
-        const doc = new jsPDF();
-        doc.text('Orçamento SanOptics', 10, 10);
-        doc.text(`Total: ${document.getElementById('total-price').textContent}`, 10, 20);
-        doc.save('orcamento.pdf');
-      });
-    }
   }
 
   catalogUpload.addEventListener('change', () => {
