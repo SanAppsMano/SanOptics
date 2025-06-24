@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const savingOverlay = document.getElementById('saving-overlay');
   const visitCount = document.getElementById('visit-count');
 
+  let catalogImages = [];
+
   // Guarantee that the overlay is hidden until saving begins
   if (savingOverlay) {
     savingOverlay.classList.add('hidden');
@@ -361,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const finalize = () => {
       const done = () => {
+        visit.catalogImages = catalogImages.slice();
         saveVisit(visit);
         savingOverlay.classList.add('hidden');
         updateButtons();
@@ -373,6 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         dpPoints = [];
         dpResult.textContent = '0';
+        catalogDiv.innerHTML = '';
+        catalogImages = [];
       };
       navigator.geolocation.getCurrentPosition(pos => {
         visit.latitude = pos.coords.latitude;
@@ -466,6 +471,13 @@ document.addEventListener('DOMContentLoaded', () => {
           doc.addImage(v.recipeImage, 'JPEG', 10, y, 70, 70);
           y += 75;
         }
+        if (Array.isArray(v.catalogImages) && v.catalogImages.length) {
+          doc.text('Catálogo:', 10, y); y += 5;
+          v.catalogImages.forEach(imgUrl => {
+            doc.addImage(imgUrl, 'JPEG', 10, y, 60, 60);
+            y += 65;
+          });
+        }
         if (v.signature) {
           doc.text('Assinatura:', 10, y); y += 5;
           doc.addImage(v.signature, 'PNG', 10, y, 60, 30); y += 35;
@@ -481,17 +493,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   catalogUpload.addEventListener('change', () => {
     const files = Array.from(catalogUpload.files);
+    catalogImages = [];
+    catalogDiv.innerHTML = '';
     catalogFilename.textContent = files.length ? `${files.length} arquivo(s)` : 'Nenhum';
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = e => {
+    Promise.all(files.map(f => compressImage(f))).then(images => {
+      images.forEach(dataUrl => {
         const img = document.createElement('img');
-        img.src = e.target.result;
+        img.src = dataUrl;
         img.style.maxWidth = '100px';
         img.style.margin = '0.25rem';
         catalogDiv.appendChild(img);
-      };
-      reader.readAsDataURL(file);
+      });
+      catalogImages = images;
     });
   });
 });

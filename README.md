@@ -29,7 +29,7 @@ O campo de assinatura no formulário permite desenhar com o mouse ou toque, e a 
 O título "Histórico de Visitas" exibe, entre parênteses, a quantidade de registros salvos.
 
 ## Armazenamento
-As imagens enviadas são reduzidas automaticamente antes do salvamento para economizar espaço. Caso o limite de `localStorage` seja atingido, o aplicativo exibirá um aviso sugerindo exportar ou remover visitas antigas. Para evitar exceder a capacidade, somente a foto da receita é mantida no histórico; a imagem utilizada para medir a distância pupilar não é mais armazenada.
+As imagens enviadas são reduzidas automaticamente antes do salvamento para economizar espaço. Caso o limite de `localStorage` seja atingido, o aplicativo exibirá um aviso sugerindo exportar ou remover visitas antigas. Para evitar exceder a capacidade, somente a foto da receita é mantida no histórico; a imagem utilizada para medir a distância pupilar não é mais armazenada. Fotos do catálogo são compactadas e salvas junto com a visita e também aparecem no PDF exportado, caso existam.
 
 ## Experiência do Usuário
 Ao confirmar o cadastro de uma visita, uma barra de progresso animada é exibida indicando que o salvamento está em andamento. Ela permanece oculta durante a navegação comum e só aparece quando o botão **Salvar Visita** é pressionado. Assim que o processo termina, a barra desaparece automaticamente.
