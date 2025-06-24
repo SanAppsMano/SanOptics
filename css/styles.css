@@ -17,6 +17,11 @@ main {
 .hidden {
   display: none;
 }
+
+/* Ensure overlay stays hidden until a save begins */
+#saving-overlay.hidden {
+  display: none;
+}
 form {
   display: flex;
   flex-direction: column;

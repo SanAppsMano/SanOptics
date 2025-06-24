@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportPdfBtn = document.getElementById('export-pdf');
   const savingOverlay = document.getElementById('saving-overlay');
 
+  // Guarantee that the overlay is hidden until saving begins
+  if (savingOverlay) {
+    savingOverlay.classList.add('hidden');
+  }
+
   const { jsPDF } = window.jspdf || {};
 
   function compressImage(file, maxWidth = 800, quality = 0.8) {
