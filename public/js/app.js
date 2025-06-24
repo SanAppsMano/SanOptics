@@ -137,9 +137,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const dpUpload = document.getElementById('dp-upload');
   const dpFilename = document.getElementById('dp-filename');
   const dpResult = document.getElementById('dp-result');
+  const dpHelpBtn = document.getElementById('dp-help-btn');
+  const dpHelpModal = document.getElementById('dp-help-modal');
+  const dpHelpClose = document.getElementById('dp-help-close');
   let dpPoints = [];
   let dpImage = null;
   let dpPhotoSrc = null;
+
+  if (dpHelpBtn && dpHelpModal && dpHelpClose) {
+    dpHelpBtn.addEventListener('click', () => dpHelpModal.classList.remove('hidden'));
+    dpHelpClose.addEventListener('click', () => dpHelpModal.classList.add('hidden'));
+    dpHelpModal.addEventListener('click', e => {
+      if (e.target === dpHelpModal) dpHelpModal.classList.add('hidden');
+    });
+  }
 
   recipeUpload.addEventListener('change', () => {
     const file = recipeUpload.files[0];
