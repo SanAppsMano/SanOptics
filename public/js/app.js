@@ -81,18 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let drawing = false;
 
   function openSignature() {
-    signatureCanvas.classList.remove('hidden');
-    openSignBtn.style.display = 'none';
-    clearSignBtn.style.display = 'inline-block';
-    closeSignBtn.style.display = 'inline-block';
     signatureOpen = true;
   }
 
   function closeSignature() {
-    signatureCanvas.classList.add('hidden');
-    openSignBtn.style.display = 'inline-block';
-    clearSignBtn.style.display = 'none';
-    closeSignBtn.style.display = 'none';
     signatureOpen = false;
     drawing = false;
   }
@@ -340,11 +332,10 @@ document.addEventListener('DOMContentLoaded', () => {
         signatureCtx.drawImage(img, 0, 0);
       };
       img.src = v.signature;
-      openSignature();
     } else {
       signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-      closeSignature();
     }
+    closeSignature();
   });
 
   visitForm.addEventListener('submit', e => {

@@ -25,7 +25,7 @@ Depois acesse `http://localhost:8000` no navegador.
 
 Não há tela de login: ao abrir o site é possível cadastrar visitas imediatamente. Os dados ficam salvos no `localStorage` do navegador.
 Use os botões disponíveis para exportar ou importar um arquivo JSON, gerar um PDF profissional (uma visita por página) ou limpar todo o histórico. Ao exportar, os nomes dos arquivos incluem a data e hora atuais no formato `Visitas_DD-MM-YYYY_HH:MM:SS.pdf` ou `Exportado_DD-MM-YYYY_HH:MM:SS.json`.
-O campo de assinatura no formulário permite desenhar com o mouse ou toque, e a assinatura é incluída no PDF gerado.
+A área de assinatura permanece visível o tempo todo. Utilize o ícone de lápis para habilitar a edição, o de lixeira para limpar e o de check para concluir. A assinatura é incluída no PDF gerado.
 O título "Histórico de Visitas" exibe, entre parênteses, a quantidade de registros salvos.
 
 ## Armazenamento
