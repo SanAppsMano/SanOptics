@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SanOptics</title>
   <link rel="stylesheet" href="css/styles.css">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YBSKPG8WWG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-YBSKPG8WWG');
+  </script>
   <script defer src="js/jspdf.umd.min.js"></script>
   <script defer src="js/app.js"></script>
 </head>
@@ -75,8 +84,6 @@
     <section id="history-section">
       <h2 id="history-title">Histórico de Visitas (<span id="visit-count">0</span>)</h2>
       <button id="export-json" disabled>Exportar</button>
-      <button id="share-json" disabled>Compartilhar JSON</button>
-      <button id="export-pdf" disabled>Exportar PDF</button>
       <button id="share-pdf" disabled>Compartilhar PDF</button>
       <button id="import-json">Importar</button>
       <input id="import-file" type="file" accept="application/json" style="display:none">
