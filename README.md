@@ -3,7 +3,10 @@
 Esta é uma aplicação estática para serviços de visita domiciliar de uma ótica virtual. O projeto pode ser publicado no Netlify facilmente.
 
 ## Estrutura
- - `public/` contém `index.html`, `css/` e `js/` com todos os arquivos estáticos.
+ - `public/` contém `index.html`, `css/` e `js/` com os arquivos estáticos.
+   `public/css/styles.css` e `public/js/app.js` são as versões oficiais e
+   editáveis do estilo e do JavaScript do aplicativo. Não existem cópias fora
+   dessa pasta.
  - `lib/` possui as cópias locais do Leaflet (JS e CSS).
 
 ## Deploy no Netlify
