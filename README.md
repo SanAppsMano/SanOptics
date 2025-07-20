@@ -4,7 +4,6 @@ Esta é uma aplicação estática para serviços de visita domiciliar de uma ót
 
 ## Estrutura
  - `public/` contém `index.html`, `css/` e `js/` com todos os arquivos estáticos.
- - `lib/` possui as cópias locais do Leaflet (JS e CSS).
 
 ## Deploy no Netlify
 1. Faça login em sua conta Netlify e crie um novo site a partir deste repositório.
