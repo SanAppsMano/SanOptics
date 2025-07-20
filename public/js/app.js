@@ -72,6 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     catalogFilename.textContent = 'Nenhum';
   }
 
+  function calculateScale(referenceWidthPx) {
+    const knownWidthMm = 85.6; // largura de um cartão de crédito
+    return knownWidthMm / referenceWidthPx;
+  }
+
   const signatureCanvas = document.getElementById('signature-canvas');
   const signatureCtx = signatureCanvas.getContext('2d');
   const openSignBtn = document.getElementById('open-signature');
@@ -143,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let dpPoints = [];
   let dpImage = null;
   let dpPhotoSrc = null;
+  let dpScale = 0.264583;
 
   if (dpHelpModal) dpHelpModal.classList.add('hidden');
 
@@ -201,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         restoreDpCanvas();
         dpCtx.drawImage(dpImage, 0, 0);
         dpPoints = [];
+        dpScale = 0.264583;
         dpResult.textContent = '0';
       };
       dpImage.src = dataUrl;
@@ -217,9 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const rect = dpCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    if (dpPoints.length >= 2) {
+    if (dpPoints.length >= 4) {
       dpCtx.drawImage(dpImage, 0, 0);
       dpPoints = [];
+      dpScale = 0.264583;
     }
     dpCtx.fillStyle = 'red';
     dpCtx.beginPath();
@@ -229,8 +237,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dpPoints.length === 2) {
       const dx = dpPoints[1].x - dpPoints[0].x;
       const dy = dpPoints[1].y - dpPoints[0].y;
+      const refPx = Math.hypot(dx, dy);
+      dpScale = calculateScale(refPx);
+    } else if (dpPoints.length === 4) {
+      const dx = dpPoints[3].x - dpPoints[2].x;
+      const dy = dpPoints[3].y - dpPoints[2].y;
       const distPx = Math.hypot(dx, dy);
-      const distMm = (distPx * 0.264583).toFixed(1);
+      const distMm = (distPx * dpScale).toFixed(1);
       dpResult.textContent = distMm;
       reduceDpCanvas();
     }
@@ -270,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dpImage = null;
     dpPhotoSrc = null;
     dpPoints = [];
+    dpScale = 0.264583;
     dpResult.textContent = '0';
   }
 
@@ -423,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
           dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
         }
         dpPoints = [];
+        dpScale = 0.264583;
         dpResult.textContent = '0';
         catalogDiv.innerHTML = '';
         catalogImages = [];
@@ -487,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dpImage = null;
       dpPhotoSrc = null;
       dpPoints = [];
+      dpScale = 0.264583;
       dpResult.textContent = '0';
       updateButtons();
     }
