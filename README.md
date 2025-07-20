@@ -32,8 +32,8 @@ O título "Histórico de Visitas" exibe, entre parênteses, a quantidade de regi
 As imagens enviadas são reduzidas automaticamente antes do salvamento para economizar espaço. Caso o limite de `localStorage` seja atingido, o aplicativo exibirá um aviso sugerindo exportar ou remover visitas antigas. Para evitar exceder a capacidade, somente a foto da receita é mantida no histórico; a imagem utilizada para medir a distância pupilar não é mais armazenada. Fotos do catálogo são compactadas e salvas junto com a visita e também aparecem no PDF exportado, caso existam.
 
 ## Medição e calibragem da DP
-Para obter a distância pupilar real é necessário calibrar a foto. Inclua na imagem um cartão de crédito (largura de 85,6&nbsp;mm) ou outro objeto de referência.
-No canvas, toque primeiro nas duas extremidades desse objeto e depois nos centros das pupilas. O aplicativo calcula o fator de escala automaticamente e exibe o valor em milímetros.
+Para medir a distância pupilar sem usar objetos externos, fotografe o rosto de frente e marque no canvas as duas bordas de uma íris.
+Assumindo uma largura média de 12&nbsp;mm para a íris, o aplicativo calcula o fator de escala e, em seguida, toque nos centros das pupilas para obter o valor real em milímetros.
 
 ## Experiência do Usuário
 Ao confirmar o cadastro de uma visita, uma barra de progresso animada é exibida indicando que o salvamento está em andamento. Ela permanece oculta durante a navegação comum e só aparece quando o botão **Salvar Visita** é pressionado. Assim que o processo termina, a barra desaparece automaticamente.

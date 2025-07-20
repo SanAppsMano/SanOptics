@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function calculateScale(referenceWidthPx) {
-    const knownWidthMm = 85.6; // largura de um cartão de crédito
+    const knownWidthMm = 12; // largura média de uma íris
     return knownWidthMm / referenceWidthPx;
   }
 
