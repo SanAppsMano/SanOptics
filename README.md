@@ -34,6 +34,7 @@ As imagens enviadas são reduzidas automaticamente antes do salvamento para econ
 ## Medição e calibragem da DP
 Para medir a distância pupilar sem usar objetos externos, fotografe o rosto de frente e marque no canvas as duas bordas de uma íris.
 Assumindo uma largura média de 12&nbsp;mm para a íris, o aplicativo calcula o fator de escala e, em seguida, toque nos centros das pupilas para obter o valor real em milímetros.
+Os pontos usados para marcar a íris aparecem em azul, enquanto os das pupilas ficam vermelhos.
 
 ## Experiência do Usuário
 Ao confirmar o cadastro de uma visita, uma barra de progresso animada é exibida indicando que o salvamento está em andamento. Ela permanece oculta durante a navegação comum e só aparece quando o botão **Salvar Visita** é pressionado. Assim que o processo termina, a barra desaparece automaticamente.

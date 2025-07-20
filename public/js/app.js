@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dpPoints = [];
       dpScale = 0.264583;
     }
-    dpCtx.fillStyle = 'red';
+    dpCtx.fillStyle = dpPoints.length < 2 ? 'blue' : 'red';
     dpCtx.beginPath();
     dpCtx.arc(x, y, 4, 0, Math.PI * 2);
     dpCtx.fill();
