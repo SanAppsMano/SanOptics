@@ -53,6 +53,7 @@
             <span id="dp-filename" class="file-name">Nenhum</span>
             <input type="file" id="dp-upload" accept="image/*" capture="environment">
           </div>
+          <p class="help-text">Marque primeiro as duas bordas de uma íris (pontos azuis) na foto.</p>
           <canvas id="dp-canvas" width="300" height="100"></canvas>
           <p class="help-text">A imagem será reduzida após a marcação. Toque nela para alternar entre tamanho reduzido e original.</p>
           <p>DP: <span id="dp-result">0</span> mm</p>
@@ -66,7 +67,7 @@
           </div>
           <canvas id="signature-canvas" width="300" height="100"></canvas>
         </fieldset>
-        <button type="submit">Salvar Visita</button>
+        <button type="submit" id="save-visit" disabled>Salvar Visita</button>
       </form>
     </section>
 
@@ -88,6 +89,7 @@
       <button id="import-json">Importar</button>
       <input id="import-file" type="file" accept="application/json" style="display:none">
       <button id="clear-data" disabled>Limpar Dados</button>
+      <button id="delete-selected" disabled>Excluir Marcados</button>
       <ul id="history-list"></ul>
     </section>
   </main>
@@ -102,7 +104,7 @@
   <div id="dp-help-modal" class="modal hidden">
     <div class="modal-content">
       <p>Toque no ícone de câmera para tirar ou escolher uma foto.</p>
-      <p>Toque nos centros das duas pupilas na imagem.</p>
+      <p>Marque as duas bordas de uma íris (pontos azuis) e depois os centros das pupilas (pontos vermelhos).</p>
       <p>O valor da DP (em milímetros) aparece ao lado de “DP”.</p>
       <button type="button" id="dp-help-close">Fechar</button>
     </div>

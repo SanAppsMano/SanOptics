@@ -14,10 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const importBtn = document.getElementById('import-json');
   const importFile = document.getElementById('import-file');
   const clearBtn = document.getElementById('clear-data');
+  const deleteSelectedBtn = document.getElementById('delete-selected');
   const exportJsonBtn = document.getElementById('export-json');
   const sharePdfBtn = document.getElementById('share-pdf');
   const savingOverlay = document.getElementById('saving-overlay');
   const visitCount = document.getElementById('visit-count');
+  const saveVisitBtn = document.getElementById('save-visit');
 
   let catalogImages = [];
 
@@ -70,6 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
     recipeFilename.textContent = 'Nenhum';
     dpFilename.textContent = 'Nenhum';
     catalogFilename.textContent = 'Nenhum';
+  }
+
+  function calculateScale(referenceWidthPx) {
+    const knownWidthMm = 12; // largura média de uma íris
+    return knownWidthMm / referenceWidthPx;
   }
 
   const signatureCanvas = document.getElementById('signature-canvas');
@@ -143,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let dpPoints = [];
   let dpImage = null;
   let dpPhotoSrc = null;
+  let dpScale = 0.264583;
 
   if (dpHelpModal) dpHelpModal.classList.add('hidden');
 
@@ -201,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         restoreDpCanvas();
         dpCtx.drawImage(dpImage, 0, 0);
         dpPoints = [];
+        dpScale = 0.264583;
         dpResult.textContent = '0';
       };
       dpImage.src = dataUrl;
@@ -217,11 +226,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const rect = dpCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    if (dpPoints.length >= 2) {
+    if (dpPoints.length >= 4) {
       dpCtx.drawImage(dpImage, 0, 0);
       dpPoints = [];
+      dpScale = 0.264583;
     }
-    dpCtx.fillStyle = 'red';
+    dpCtx.fillStyle = dpPoints.length < 2 ? 'blue' : 'red';
     dpCtx.beginPath();
     dpCtx.arc(x, y, 4, 0, Math.PI * 2);
     dpCtx.fill();
@@ -229,8 +239,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dpPoints.length === 2) {
       const dx = dpPoints[1].x - dpPoints[0].x;
       const dy = dpPoints[1].y - dpPoints[0].y;
+      const refPx = Math.hypot(dx, dy);
+      dpScale = calculateScale(refPx);
+    } else if (dpPoints.length === 4) {
+      const dx = dpPoints[3].x - dpPoints[2].x;
+      const dy = dpPoints[3].y - dpPoints[2].y;
       const distPx = Math.hypot(dx, dy);
-      const distMm = (distPx * 0.264583).toFixed(1);
+      const distMm = (distPx * dpScale).toFixed(1);
       dpResult.textContent = distMm;
       reduceDpCanvas();
     }
@@ -239,6 +254,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function addVisitToHistory(visit, index) {
     const li = document.createElement('li');
     li.dataset.index = index;
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'delete-check';
+    li.appendChild(checkbox);
     const time = document.createElement('strong');
     time.textContent = visit.timestamp;
     li.appendChild(time);
@@ -270,7 +289,9 @@ document.addEventListener('DOMContentLoaded', () => {
     dpImage = null;
     dpPhotoSrc = null;
     dpPoints = [];
+    dpScale = 0.264583;
     dpResult.textContent = '0';
+    updateSaveButton();
   }
 
   function loadHistory() {
@@ -279,6 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     visits.forEach((v, i) => {
       addVisitToHistory(v, i);
     });
+    updateDeleteSelected();
   }
 
   function download(filename, text) {
@@ -321,7 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
     exportJsonBtn.disabled = !hasData;
     sharePdfBtn.disabled = !hasData;
     clearBtn.disabled = !hasData;
+    deleteSelectedBtn.disabled = true;
     updateVisitCount();
+  }
+
+  function updateSaveButton() {
+    if (!saveVisitBtn) return;
+    saveVisitBtn.disabled = !visitForm.checkValidity();
+  }
+
+  function updateDeleteSelected() {
+    const checked = historyList.querySelector('.delete-check:checked');
+    deleteSelectedBtn.disabled = !checked;
   }
 
   visitSection.classList.remove('hidden');
@@ -330,8 +363,20 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHistory();
   updateButtons();
   resetFileNames();
+  updateSaveButton();
+  visitForm.addEventListener('input', updateSaveButton);
+  historyList.addEventListener('change', e => {
+    if (e.target.classList.contains('delete-check')) {
+      updateDeleteSelected();
+    }
+  });
 
   historyList.addEventListener('click', e => {
+    if (e.target.classList.contains('delete-check')) {
+      updateDeleteSelected();
+      e.stopPropagation();
+      return;
+    }
     const li = e.target.closest('li');
     if (!li) return;
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
@@ -385,6 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
       signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
     }
     closeSignature();
+    updateSaveButton();
   });
 
   visitForm.addEventListener('submit', e => {
@@ -423,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
           dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
         }
         dpPoints = [];
+        dpScale = 0.264583;
         dpResult.textContent = '0';
         catalogDiv.innerHTML = '';
         catalogImages = [];
@@ -480,16 +527,34 @@ document.addEventListener('DOMContentLoaded', () => {
       recipePreview.src = '';
       recipePreview.style.display = 'none';
       catalogDiv.innerHTML = '';
+      visitForm.reset();
       resetFileNames();
+      catalogImages = [];
+      updateSaveButton();
       dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
       signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
       closeSignature();
       dpImage = null;
       dpPhotoSrc = null;
       dpPoints = [];
+      dpScale = 0.264583;
       dpResult.textContent = '0';
       updateButtons();
     }
+  });
+
+  deleteSelectedBtn.addEventListener('click', () => {
+    const checks = historyList.querySelectorAll('.delete-check:checked');
+    if (!checks.length) return;
+    if (!confirm(`Excluir ${checks.length} visita(s)?`)) return;
+    let visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    const indices = Array.from(checks).map(c => parseInt(c.closest('li').dataset.index, 10));
+    indices.sort((a, b) => b - a);
+    indices.forEach(i => visits.splice(i, 1));
+    storeVisits(visits);
+    loadHistory();
+    updateButtons();
+    updateDeleteSelected();
   });
 
   if (jsPDF) {
