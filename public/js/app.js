@@ -14,10 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const importBtn = document.getElementById('import-json');
   const importFile = document.getElementById('import-file');
   const clearBtn = document.getElementById('clear-data');
+  const deleteSelectedBtn = document.getElementById('delete-selected');
   const exportJsonBtn = document.getElementById('export-json');
   const sharePdfBtn = document.getElementById('share-pdf');
   const savingOverlay = document.getElementById('saving-overlay');
   const visitCount = document.getElementById('visit-count');
+  const saveVisitBtn = document.getElementById('save-visit');
 
   let catalogImages = [];
 
@@ -252,6 +254,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function addVisitToHistory(visit, index) {
     const li = document.createElement('li');
     li.dataset.index = index;
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'delete-check';
+    li.appendChild(checkbox);
     const time = document.createElement('strong');
     time.textContent = visit.timestamp;
     li.appendChild(time);
@@ -285,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dpPoints = [];
     dpScale = 0.264583;
     dpResult.textContent = '0';
+    updateSaveButton();
   }
 
   function loadHistory() {
@@ -293,6 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     visits.forEach((v, i) => {
       addVisitToHistory(v, i);
     });
+    updateDeleteSelected();
   }
 
   function download(filename, text) {
@@ -335,7 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
     exportJsonBtn.disabled = !hasData;
     sharePdfBtn.disabled = !hasData;
     clearBtn.disabled = !hasData;
+    deleteSelectedBtn.disabled = true;
     updateVisitCount();
+  }
+
+  function updateSaveButton() {
+    if (!saveVisitBtn) return;
+    saveVisitBtn.disabled = !visitForm.checkValidity();
+  }
+
+  function updateDeleteSelected() {
+    const checked = historyList.querySelector('.delete-check:checked');
+    deleteSelectedBtn.disabled = !checked;
   }
 
   visitSection.classList.remove('hidden');
@@ -344,8 +363,20 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHistory();
   updateButtons();
   resetFileNames();
+  updateSaveButton();
+  visitForm.addEventListener('input', updateSaveButton);
+  historyList.addEventListener('change', e => {
+    if (e.target.classList.contains('delete-check')) {
+      updateDeleteSelected();
+    }
+  });
 
   historyList.addEventListener('click', e => {
+    if (e.target.classList.contains('delete-check')) {
+      updateDeleteSelected();
+      e.stopPropagation();
+      return;
+    }
     const li = e.target.closest('li');
     if (!li) return;
     const visits = JSON.parse(localStorage.getItem('visits') || '[]');
@@ -399,6 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
       signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
     }
     closeSignature();
+    updateSaveButton();
   });
 
   visitForm.addEventListener('submit', e => {
@@ -495,7 +527,10 @@ document.addEventListener('DOMContentLoaded', () => {
       recipePreview.src = '';
       recipePreview.style.display = 'none';
       catalogDiv.innerHTML = '';
+      visitForm.reset();
       resetFileNames();
+      catalogImages = [];
+      updateSaveButton();
       dpCtx.clearRect(0, 0, dpCanvas.width, dpCanvas.height);
       signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
       closeSignature();
@@ -506,6 +541,20 @@ document.addEventListener('DOMContentLoaded', () => {
       dpResult.textContent = '0';
       updateButtons();
     }
+  });
+
+  deleteSelectedBtn.addEventListener('click', () => {
+    const checks = historyList.querySelectorAll('.delete-check:checked');
+    if (!checks.length) return;
+    if (!confirm(`Excluir ${checks.length} visita(s)?`)) return;
+    let visits = JSON.parse(localStorage.getItem('visits') || '[]');
+    const indices = Array.from(checks).map(c => parseInt(c.closest('li').dataset.index, 10));
+    indices.sort((a, b) => b - a);
+    indices.forEach(i => visits.splice(i, 1));
+    storeVisits(visits);
+    loadHistory();
+    updateButtons();
+    updateDeleteSelected();
   });
 
   if (jsPDF) {

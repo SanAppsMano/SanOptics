@@ -36,6 +36,11 @@ button, .icon-btn {
   transition: transform 0.1s ease;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 button:active, .icon-btn:active {
   transform: scale(0.95);
 }

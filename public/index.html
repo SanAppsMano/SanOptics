@@ -67,7 +67,7 @@
           </div>
           <canvas id="signature-canvas" width="300" height="100"></canvas>
         </fieldset>
-        <button type="submit">Salvar Visita</button>
+        <button type="submit" id="save-visit" disabled>Salvar Visita</button>
       </form>
     </section>
 
@@ -89,6 +89,7 @@
       <button id="import-json">Importar</button>
       <input id="import-file" type="file" accept="application/json" style="display:none">
       <button id="clear-data" disabled>Limpar Dados</button>
+      <button id="delete-selected" disabled>Excluir Marcados</button>
       <ul id="history-list"></ul>
     </section>
   </main>

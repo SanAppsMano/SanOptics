@@ -38,3 +38,5 @@ Os pontos usados para marcar a íris aparecem em azul, enquanto os das pupilas f
 
 ## Experiência do Usuário
 Ao confirmar o cadastro de uma visita, uma barra de progresso animada é exibida indicando que o salvamento está em andamento. Ela permanece oculta durante a navegação comum e só aparece quando o botão **Salvar Visita** é pressionado. Assim que o processo termina, a barra desaparece automaticamente.
+O botão **Salvar Visita** fica desativado até que todos os campos obrigatórios estejam preenchidos.
+No histórico é possível marcar visitas para exclusão individual através do botão **Excluir Marcados**.
